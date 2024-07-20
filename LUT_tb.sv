@@ -1,20 +1,27 @@
-module LUT_tb(A,B,C,D,E,F,G,H);
-output reg [15:0] A,B;
-input wire [15:0] C;
-input wire D,E,F,G,H;
-
-  LUT DUT(.X(A),.Y(B),.Z(C),.Sign(D),.Zero(E),.OF(F),.Parity(G),.Carry(H));
-
-initial
- begin
+module LUT_tb(ram, A0, A1, A2, A3, CLK, RST);
+ input logic ram[15:0];
+ output logic A0, A1, A2, A3;
+ output logic CLK, RST;
+ logic ram_o; 
+ logic addr;
+ LUT DUT(.RAM(ram),.a0(A0),.a1(A1),.a2(A2),.a3(A3),.clk(CLK),.rst(RST));
+ assign addr = {A0,A1,A2,A3};
+ assign ram_o = ram[addr];
+ initial
+  begin
    
-   $monitor ($time,"  A=%h,B=%h,C=%h,D=%b,E=%b,F=%b,G=%b,H=%b",A,B,C,  D,E,F,G,H);
-   
-  #5 A=16'hffff; B=16'hAAAA;
-  #5 A=16'h5555; B=16'hAAAA;
-  #5 A=16'hffff; B=16'hffff;
-  #5 A=16'h3456; B=16'h0120;
-  #5 $finish;
+   $monitor ($time,"  CLK=%b, RST=%b, A0=%b, A1=%b, A3=%b, RAM=%b",CLK,RST,A0,A1,A2,A3,ram_o);
   
+  CLK = '0;
+  RST = '0;
+  #5 RST = '1;
+  
+  #20 {A0,A1,A2,A3} = 4'b1010;
+  #35 {A0,A1,A2,A3} = 4'b0111; 
+ end
+  
+ always #5 CLK = !CLK;
+ initial begin
+  #45 $finish;
  end
 endmodule
