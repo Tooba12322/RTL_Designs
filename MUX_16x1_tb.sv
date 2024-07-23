@@ -27,9 +27,10 @@ Output :
                    5  A=0, B=674f, C= 5
                   10  A=0, B=674f, C=12
                   15  A=1, B=674f, C= 8
-                  20  A=1, B=674f, C= 3
-                  25  A=1, B=a017, C= 0
-                  30  A=0, B=a017, C= 5
-                  35  A=0, B=a017, C=10
-                  40  A=1, B=a017, C=15
-testbench.sv:21: $finish called at 45 (1s)
+                  20  A=1, B=a017, C= 0
+                  25  A=0, B=a017, C= 5
+                  30  A=0, B=a017, C= 3
+testbench.sv:20: $finish called at 35 (1s)
+
+Waveform :
+https://www.edaplayground.com/w/x/6t8
