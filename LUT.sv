@@ -8,7 +8,7 @@ module LUT(RAM, a0, a1, a2, a3, clk, rst);
   logic addr;
   logic i;
   
-  always_comb F = a3 + ((!a3)*(!a2)*(a1)) + ((a2)*(a1)*(!a0));
+  always_comb F = a3 || ((!a3) && (!a2) && (a1)) || ((a2) && (a1) && (!a0));
   always_comb addr = {a3, a2, a1, a0};
   
   
