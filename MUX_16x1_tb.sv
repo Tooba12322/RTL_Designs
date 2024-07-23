@@ -7,17 +7,16 @@ module MUX_16x1_tb(A,B,C);
 
 initial
  begin
-   
+   $dumpfile("MUX_16x1.vcd");
+   $dumpvars(0,MUX_16x1_tb);
    $monitor ($time,"  A=%b, B=%h, C=%d",A,B,C);
    
   #5 B=16'h674F; C=4'd5;
   #5 C=4'd12;
   #5 C=4'd8;
-  #5 C=4'd3;
   #5 B=16'hA017; C=4'd0;
   #5 C=4'd5;
-  #5 C=4'd10;
-  #5 C=4'd15;
+  #5 C=4'd3;
   #5 $finish;
   
  end
