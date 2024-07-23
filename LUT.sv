@@ -1,3 +1,5 @@
+//Implementing 4-variable function in LUT as F
+
 module LUT(RAM, a0, a1, a2, a3, clk, rst);
   
   input logic a0, a1, a2, a3;
@@ -6,7 +8,7 @@ module LUT(RAM, a0, a1, a2, a3, clk, rst);
   output logic RAM[15:0];
   logic F;
   logic addr;
-  logic i;
+  int i;
   
   always_comb F = a3 || ((!a3) && (!a2) && (a1)) || ((a2) && (a1) && (!a0));
   always_comb addr = {a3, a2, a1, a0};
@@ -21,6 +23,4 @@ module LUT(RAM, a0, a1, a2, a3, clk, rst);
     
   end 
 endmodule
-
-
 
