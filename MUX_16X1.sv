@@ -2,9 +2,9 @@
 
 module MUX_2x1(Y,In,Sel);
  output logic Y;
- input [1:0] In;
- input Sel;
-  assign Y = In[Sel]; 
+ input logic [1:0] In;
+ input logic Sel;
+  assign Y = (In[0] && !Sel) || (In[1] && Sel); 
 endmodule
 
 module MUX_4x1(Y,In,Sel);
