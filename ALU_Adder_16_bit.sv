@@ -46,9 +46,10 @@ module adder_4b(Co,Sum,A,B,Cin);
   
 endmodule  
 
-module adder_16b(Co,Sum,A,B,Cin);
+module ALU_adder_16b(Sign,Zero,Parity,Overflow,Co,Sum,A,B,Cin);
   output logic [15:0]Sum;
   output logic Co;
+  output logic Sign,Zero,Parity,Overflow;
   input logic [15:0]A;
   input logic [15:0]B; 
   input logic Cin;
@@ -58,5 +59,10 @@ module adder_16b(Co,Sum,A,B,Cin);
   adder_4b A2(c2,Sum[7:4],A[7:4],B[7:4],c1);
   adder_4b A3(c3,Sum[11:8],A[11:8],B[11:8],c2);
   adder_4b A4(Co,Sum[15:12],A[15:12],B[15:12],c3);
+  
+  assign Sign = Sum[15];
+  assign Zero = ~|Sum;
+  assign Parity = ~^Sum;
+  assign Overflow = (A[15] && B[15] && !Sum[15]) || (!A[15] && !B[15] && Sum[15]);
   
 endmodule
