@@ -1,8 +1,8 @@
 module adder_16b_tb(co,s,a,b,ci);
  input logic co;
- input logic s[15:0];
-  output logic a[15:0];
-  output logic b[15:0];
+ input logic [15:0]s;
+  output logic [15:0]a;
+  output logic [15:0]b;
   output logic ci;
  
   adder_16b DUT(.Co(co),.Sum(s),.A(a),.B(b),.Cin(ci));
