@@ -29,9 +29,43 @@ Output :
                   20 I=0, En=1, Q=0
 testbench.sv:19: $finish called at 25 (1s)
 
-Waveform :
 
-
-module SR_latch_tb()
-
+module SR_latch_tb(q,qb,s,r);
+ input logic q,qb;
+  output logic s,r;
+ 
+  SR_latch_NAND DUT(.Q(q),.Qb(qb),.S(s),.R(r));
+  
+ initial
+  begin
+    $dumpfile("SR_latch.vcd");
+    $dumpvars(0,SR_latch_tb);
+    $monitor ($time," S=%b, R=%b, Q=%b, Qb=%b",s,r,q,qb);
+  
+ 
+  #5 s='0; r='1;
+  #5 s='1; r='1;
+  #5 s='1; r='0; 
+    
+  #5 $finish;
+  end
+  
 endmodule
+
+NAND_SR_latch output :
+0 S=x, R=x, Q=x, Qb=x
+                   5 S=0, R=1, Q=0, Qb=1
+                  10 S=1, R=1, Q=0, Qb=1
+                  15 S=1, R=0, Q=1, Qb=0
+testbench.sv:18: $finish called at 20 (1s)
+
+NOR SR latch output :
+0 S=x, R=x, Q=x, Qb=x
+                   5 S=0, R=1, Q=0, Qb=1
+                  10 S=0, R=0, Q=0, Qb=1
+                  15 S=1, R=0, Q=1, Qb=0
+testbench.sv:18: $finish called at 20 (1s)
+
+
+
+
