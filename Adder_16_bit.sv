@@ -32,10 +32,10 @@ endmodule
   
 
 module adder_4b(Co,Sum,A,B,Cin);
- output logic Sum[3:0];
+ output logic [3:0]Sum;
  output logic Co;
-  input logic A[3:0];
-  input logic B[3:0]; 
+  input logic [3:0]A;
+  input logic [3:0]B; 
   input logic Cin;
   logic c1,c2,c3;
   
@@ -47,10 +47,10 @@ module adder_4b(Co,Sum,A,B,Cin);
 endmodule  
 
 module adder_16b(Co,Sum,A,B,Cin);
-  output logic Sum[15:0];
+  output logic [15:0]Sum;
   output logic Co;
-  input logic A[15:0];
-  input logic B[15:0]; 
+  input logic [15:0]A;
+  input logic [15:0]B; 
   input logic Cin;
   logic c1,c2,c3;
   
