@@ -30,3 +30,5 @@ module serial_adder_tb(s,c,si_1,si_2,l,Clk,Rst);
  always #2 Clk = !Clk;  
   
 endmodule
+
+Waveform : https://www.edaplayground.com/w/x/LSp
