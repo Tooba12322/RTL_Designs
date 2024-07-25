@@ -30,7 +30,19 @@ module serial_adder(Sum,Cy,SI_1,SI_2,load,clk,rst);
       reg_B[0] <= reg_B[1];
     end
   end
+  
+  //Either implement a separate register for storing sum or else result can be found in reg_A after load=0 
+  always @(posedge clk or negedge rst) begin
+    if (!rst) stored_sum <= '0;
+    else begin
+      stored_sum[3] <= Sum;
+      stored_sum[2] <= stored_sum[3];
+      stored_sum[1] <= stored_sum[2];
+      stored_sum[0] <= stored_sum[1];
+    end
+  end
 endmodule
+
 
 
 
