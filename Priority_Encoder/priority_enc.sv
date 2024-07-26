@@ -1,4 +1,4 @@
-// 4-input priority encoder
+// 4-input priority encoder with Valid
 module priority_enc(Out,In0,In1,In2,In3);
   output logic [1:0]Out;
   input logic In0, In1, In2, In3;
