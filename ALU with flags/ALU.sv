@@ -28,9 +28,7 @@ module ALU_16b(Sign,Zero,Parity,Overflow,Out,Op,A,B);
       POW : Out = A[1:0] ** B[1:0];
     endcase
   end
-      
     
-  
   assign Sign = (Op[2:1]=='0) ? Out[15] : 'x; //Only for arithmatic operation
   assign Zero = ~|Out;
   assign Parity = ~^Out;
