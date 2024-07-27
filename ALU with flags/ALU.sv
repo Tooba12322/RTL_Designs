@@ -1,5 +1,5 @@
 // ALU with flags
-module ALU__16b(Sign,Zero,Parity,Overflow,Out,Op,A,B);
+module ALU_16b(Sign,Zero,Parity,Overflow,Out,Op,A,B);
   output logic [15:0]Out;
   output logic Sign,Zero,Parity,Overflow;
   input logic [15:0]A;
