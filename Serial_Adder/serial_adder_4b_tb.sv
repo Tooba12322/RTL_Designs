@@ -14,21 +14,32 @@ module serial_adder_tb(s,c,si_1,si_2,l,Clk,Rst);
     Rst = '0;
     
   #5 Rst = '1;
+
+ //  way-1
+  // l ='1; si_1='1; si_2='1;
+ // #4 si_1='0; si_2='1;
+ // #4 si_1='1; si_2='0; 
+ // #4 si_1='0; si_2='1;
+ // #4 l ='0; si_1='1; si_2='0;
+ // #4 si_1='0; si_2='1;
+ // #4 si_1='1; si_2='0;
+ // #4 si_1='0; si_2='0;
+    
+    //Better way of coding for same stimulus more test cases - way-2
+    for (int i=0 ; i<33 ; i++) begin
+      l = $random%2;
+      si_1=$random%5; 
+      si_2=$random%8;
+      #4;
+    end
   
-   l ='1; si_1='1; si_2='1;
-  #4 si_1='0; si_2='1;
-  #4 si_1='1; si_2='0; 
-  #4 si_1='0; si_2='1;
-  #4 l ='0; si_1='1; si_2='0;
-  #4 si_1='0; si_2='1;
-  #4 si_1='1; si_2='0;
-  #4 si_1='0; si_2='0;
-  
-  #50 $finish;
+  #5 $finish;
   end
   
  always #2 Clk = !Clk;  
   
 endmodule
 
-Waveform : https://www.edaplayground.com/w/x/LSp
+Waveform (w-1) : https://www.edaplayground.com/w/x/LSp
+
+Waveform (w-2) : https://www.edaplayground.com/w/x/USx
