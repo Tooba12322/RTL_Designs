@@ -8,13 +8,14 @@ LUT Design Description :
 6.Binary adder subtractor
 7.2-bit comparator
 8.4 input priority encoder
-9.Flip-Flops
-10.4-bit parallel in, serial out shift register
+
+
 11.LFSR
 12.Async mod-10 counter
 13.4-bit up-down counter
 14.Ring counter
 15.Johnson counter
+
 16.Memory with address decoding
 17.Edge detector
 18.ALU
@@ -35,3 +36,8 @@ LUT Design Description :
 33.APB slave interface
 34.APB interface
 35.Memory interface
+
+
+
+9.Flip-Flops
+10.4-bit parallel in, serial out shift register
