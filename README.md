@@ -1,6 +1,7 @@
 
 12.Async mod-10 counter
 13.4-bit up-down counter
+
 7-segment Display Decoder: Design a 4-bit binary to 7-segment display decoder that converts a 4-bit binary input into signals to drive a 7-segment display.
 PWM Generator: Implement a basic Pulse Width Modulation (PWM) generator with adjustable duty cycle and frequency.
 
@@ -10,7 +11,7 @@ Simple Debounce Circuit: Implement a debouncing circuit for a single push-button
 17.Traffic light control
 23.Parallel to serial shift reg
 24.Detecting a sequence without FSM
-25.Different MUXes implementations
+
 26.Moore machine
 27.Mealey machine
 28.FSM examples
@@ -21,8 +22,4 @@ Simple Debounce Circuit: Implement a debouncing circuit for a single push-button
 33.APB slave interface
 34.APB interface
 35.Memory interface
-
-
-
-9.Flip-Flops
 10.4-bit parallel in, serial out shift register
