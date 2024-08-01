@@ -19,8 +19,8 @@ module TFF (Qt,T,clk,rst);
   
   always @(posedge clk or negedge rst) begin
     if (!rst) Qt <= '0;
-    else Qt <= (T=='1) ? T : Q;
-    // else Q <= T ^ Q;
+    else Qt <= (T=='1) ? !Qt : Qt;
+    //another logic -  else Q <= T ^ Q;
   end
   
 endmodule
@@ -48,5 +48,7 @@ module JKFF (Qj,J,K,clk,rst);
   end
   
 endmodule
+
+
 
 
