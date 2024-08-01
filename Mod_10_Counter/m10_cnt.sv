@@ -25,8 +25,8 @@ module M10_cnt (Cnt,clk,rst);
   
   assign Cnt = {Q4,Q3,Q2,Q1};
   
-  assign clr = !(Q4 && Q2 && !Q1 && !Q3); // Depending on clr logic any mode counter can be designed
-  //For exapmle for mod-6, clear logic would be 
+  assign clr = !(!Q1 && Q2 && !Q3 && Q4); // Depending on clr logic any mode counter can be designed
+  //For exapmle for mod-6, clear logic would be clr = !(!Q1 && Q2 && Q3 && !Q4); 
 endmodule
 
 
