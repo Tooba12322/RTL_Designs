@@ -1,3 +1,5 @@
+// Waveform : https://www.edaplayground.com/w/x/BsL
+
 module m10_cnt_tb();
  
   logic clk,rst;
@@ -21,4 +23,4 @@ module m10_cnt_tb();
  
 endmodule
 
-Waveform : https://www.edaplayground.com/w/x/BsL
+
