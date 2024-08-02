@@ -6,8 +6,6 @@
    
 16.Memory with address decoding
 17.Traffic light control
-23.Parallel to serial shift reg
-10.4-bit parallel in, serial out shift register
 24.Detecting a sequence without FSM
 
 26.Moore machine
