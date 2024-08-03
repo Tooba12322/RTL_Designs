@@ -1,6 +1,6 @@
 
-1. Design a timer that counts down from a preset value to zero and generates a timeout signal.
-2. Digital Clock: Design a basic digital clock that keeps track of hours, minutes, and seconds.
+
+1. Digital Clock: Design a basic digital clock that keeps track of hours, minutes, and seconds.
 4. PWM Generator: Implement a Pulse Width Modulation (PWM) generator with adjustable duty cycle.
 5. Serial to Parallel Converter: Create a module that converts a serial input stream into an 8-bit parallel output
 6. N-bit Register File: Design a register file with 4 registers, each 8 bits wide, with read and write functionality.
