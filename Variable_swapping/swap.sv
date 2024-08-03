@@ -26,10 +26,9 @@ module swap_2();
       C = $urandom_range(0,80);
       D = $urandom_range(0,255);
       $display($time," Before swap, C = %0d, D = %0d",C,D);
-      tmp = C;
-      C   = D; 
-      D   = tmp;
-      #5 $display($time," Before swap, C = %0d, D = %0d",C,D);
+      D <= C;
+      C  <= D;
+      #5 $display($time," After swap, C = %0d, D = %0d",C,D);
     end
   end
   
@@ -43,9 +42,9 @@ With blocking assignment :
                   10 After swap, A = 49, B = 1
  With non-blocking assignment : 
                   25 Before swap, C = 42, D = 198
-                  30 Before swap, C = 198, D = 42
+                  30 After swap, C = 198, D = 42
                   30 Before swap, C = 16, D = 9
-                  35 Before swap, C = 9, D = 16
+                  35 After swap, C = 9, D = 16
 
 
 
