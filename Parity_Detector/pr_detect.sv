@@ -6,7 +6,12 @@ module pr_detect (out,sr_in,clk,rst);
   output logic out;
   input logic sr_in,clk,rst;
   
-  enum logic {EVEN, ODD} pr_state, nx_state;
+  //typedef enum logic {EVEN, ODD} statetype;
+  //statetype pr_state,nx_state;
+  // Not working with enum as of now, still debugging
+  
+  parameter EVEN='0, ODD='1;
+  logic pr_state,nx_state;
   
   always @(posedge clk or negedge rst) begin
     if (!rst) pr_state <= '0;
@@ -28,4 +33,4 @@ module pr_detect (out,sr_in,clk,rst);
     endcase
   end
 endmodule
- // Design a circuit that identifies parity of input bit steam,even=1,odd=0
+ 
