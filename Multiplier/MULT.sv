@@ -1,5 +1,6 @@
 // Design a multiplier circuit that does multiplication of two 16-bit inputs by repeatative addition.
 
+
 module MULT (Done,Out,In,Start,clk,rst);
   
   output logic [15:0] Out;
@@ -11,8 +12,7 @@ module MULT (Done,Out,In,Start,clk,rst);
   logic ld_A,ld_B,clr_M,dec_B,add;
   logic [15:0] A,B,M;
   
-  typedef enum [3:0] {
-    S0 = 4'b0000,
+  typedef enum logic [3:0] {S0 = 4'b0000,
     S1 = 4'b0001,
     S2 = 4'b0010,
     S3 = 4'b0100,
@@ -33,7 +33,6 @@ module MULT (Done,Out,In,Start,clk,rst);
       clr_M    = '0;
       dec_B    = '0;
       add      = '0;
-    
     case (pr_state) 
       S0 : begin
              if (Start=='1) nx_state = S1;
@@ -50,7 +49,7 @@ module MULT (Done,Out,In,Start,clk,rst);
       S3 : begin
              add = '1;
              dec_B = '1;
-             if (B == '0) nx_state = S4;
+             if (B-16'd1 == '0) nx_state = S4;
            end
       S4 : begin
              if (Start=='1) nx_state = S1;
@@ -77,7 +76,7 @@ module MULT (Done,Out,In,Start,clk,rst);
     else if (add) M <= M + A;
   end 
   
-  always_comb Out = (Done='1) ? M : '0;
+  always_comb Out = (Done == '1) ? M : '0;
   
 endmodule
  
