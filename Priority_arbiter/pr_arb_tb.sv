@@ -16,8 +16,8 @@ module pr_arb_tb ();
     #5;
     repeat(50) begin
       M0=$random%2; M1=$random%2; M2=$random%2; M3=$random%2;
-      P0=$urandom_range('0,3'd7); M1=$urandom_range('0,3'd7); 
-      M2=$urandom_range('0,3'd7); M3=$urandom_range('0,3'd7);
+      P0=$urandom_range('0,3'd2); P1=$urandom_range('0,3'd4); 
+      P2=$urandom_range('0,3'd7); P3=$urandom_range('0,3'd5);
       #3;
     end
     
