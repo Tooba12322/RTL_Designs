@@ -133,4 +133,15 @@ module rr_arb(S,Req,Gnt,clk,rst);
       endcase
   end
   
+  always_comb begin
+    if (pr_state = S4) Gnt =4'b1000;
+    else if (pr_state = S3) Gnt =4'b0100;
+    else if (pr_state = S2) Gnt =4'b0010;
+    else if (pr_state = S1) Gnt =4'b0001;
+    else Gnt = '0;
+  end
+  
+  for (int i='1; i<5; i++) begin
+    S = (Gnt[i] && Req[i]) ? Req[i] : 'z;
+  end
 endmodule
