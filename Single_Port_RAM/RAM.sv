@@ -1,13 +1,15 @@
 
 // Single port synchronous RAM
 
-module RAM (data,addr,cs,mode,clk,rst);
+ module RAM (data,addr,cs,mode,clk,rst);
   
   inout logic [7:0] data;
   input logic cs,mode,clk,rst;
   input logic [9:0] addr;
+  input logic [7:0] in_data;
+  output logic [7:0] out_data;
   
-  paramter size = 1024;
+  parameter size = 1024;
   logic [7:0] RAM [0:size-1];
   logic [7:0] data_reg;
   
@@ -16,7 +18,7 @@ module RAM (data,addr,cs,mode,clk,rst);
       for (int i=0;i<size;i++) RAM[i] <= '0;
     end
     else if (cs && mode) begin
-      for (int i=0;i<size;i++) RAM[i] <= (i==addr) ? data : RAM[i];//write
+      RAM[addr] <= in_data;//write
     end
   end
   
@@ -25,6 +27,9 @@ module RAM (data,addr,cs,mode,clk,rst);
     else if (cs && !mode) data_reg <= RAM[addr];//read
   end   
   
-  assign data = (cs && mode) ? data_reg ? 8'bx;
-    
+  assign out_data = (cs && !mode) ? data_reg : 8'bx;
+  
+  assign data = (!mode) ? out_data : 8'bx;
+  assign in_data = (mode) ? data : 8'bx;
+  
 endmodule
