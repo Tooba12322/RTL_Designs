@@ -1,13 +1,14 @@
 
 // Single port synchronous RAM
 
- module RAM (data,addr,cs,mode,clk,rst);
+module RAM (data,addr,cs,mode,clk,rst);
   
   inout logic [7:0] data;
   input logic cs,mode,clk,rst;
   input logic [9:0] addr;
-  input logic [7:0] in_data;
-  output logic [7:0] out_data;
+  logic [7:0] in_data;
+  logic [7:0] out_data;
+  input bi_en;
   
   parameter size = 1024;
   logic [7:0] RAM [0:size-1];
@@ -29,7 +30,9 @@
   
   assign out_data = (cs && !mode) ? data_reg : 8'bx;
   
-  assign data = (!mode) ? out_data : 8'bx;
-  assign in_data = (mode) ? data : 8'bx;
+  assign in_data = (bi_en) ? data : 8'bx;
+  
+  assign data = (!bi_en) ? out_data : 8'bx;
   
 endmodule
+
