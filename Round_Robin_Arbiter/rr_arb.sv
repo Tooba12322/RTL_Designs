@@ -1,4 +1,4 @@
-// 4-master-1-slave priority arbiter with Valid
+// 4-master-1-slave round robin arbiter with fixed time allocation
 
 module rr_arb(S,Req,Gnt,clk,rst);
   
