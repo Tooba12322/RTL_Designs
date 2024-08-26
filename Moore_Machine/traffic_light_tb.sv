@@ -1,4 +1,4 @@
-// Waveform : 
+// Waveform : https://www.edaplayground.com/w/x/QY9
 
 module traffic_light_tb ();
   
@@ -16,7 +16,7 @@ module traffic_light_tb ();
     rst = '0;
     
     #9 rst = '1;
-    
+    // Just need clk and rst stimulus as this is free running moore machine
         
     #70 $finish;
   end
