@@ -1,4 +1,4 @@
-// Waveform : 
+// Waveform : https://www.edaplayground.com/w/x/Wh2
 
 module pr_detect_tb ();
   
