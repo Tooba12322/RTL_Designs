@@ -24,22 +24,23 @@ module rr_arb(S,Req,Gnt,clk,rst);
   
    always @(posedge clk or negedge rst) begin
      if (!rst || Clr_cnt) Cnt <= '0;
-    else Cnt <= Cnt + 2'd1;
+     else Cnt <= Cnt + 2'd1;
   end   
   
-  always_comb begin
-      nx_state = pr_state;
+  always @(pr_state,Req,Cnt) begin
+    nx_state = pr_state;
+    Clr_cnt = '0;
     
     case (pr_state) 
       S0 : begin
              Clr_cnt = '1;// remain cnt=0
-        if (Req[1]) nx_state = S1; // check for req , go in R1->R2->R3->R4->R1->R2----- fashion
+             if (Req[1]) nx_state = S1; // check for req , go in R1->R2->R3->R4->R1->R2----- fashion
              else if (Req[2]) nx_state = S2;
              else if (Req[3]) nx_state = S3;
              else if (Req[4]) nx_state = S4;
            end
       S1 : begin
-        if (Cnt == '1) begin // when R1 is served for pre allocated time, check for R2->R3->R4->R1, else go to s0
+             if (Cnt == '1) begin // when R1 is served for pre allocated time, check for R2->R3->R4->R1, else go to s0
                if (Req[2]) begin
                  nx_state = S2;
                  Clr_cnt = '1;
@@ -62,7 +63,7 @@ module rr_arb(S,Req,Gnt,clk,rst);
              end
            end
       S2 : begin
-        if (Cnt == '1) begin // when R2 is served for pre allocated time, check for R3->R4->R1->R2, else go to s0
+             if (Cnt == '1) begin // when R2 is served for pre allocated time, check for R3->R4->R1->R2, else go to s0
                if (Req[3]) begin
                  nx_state = S3;
                  Clr_cnt = '1;
@@ -85,7 +86,7 @@ module rr_arb(S,Req,Gnt,clk,rst);
              end
            end
       S3 : begin
-        if (Cnt == '1) begin // when R3 is served for pre allocated time, check for R4->R1->R2->R3, else go to s0
+             if (Cnt == '1) begin // when R3 is served for pre allocated time, check for R4->R1->R2->R3, else go to s0
                if (Req[4]) begin
                  nx_state = S4;
                  Clr_cnt = '1;
@@ -108,7 +109,7 @@ module rr_arb(S,Req,Gnt,clk,rst);
              end
            end
       S4 : begin
-        if (Cnt == '1) begin // when R4 is served for pre allocated time, check for R1->R2->R3->R4, else go to s0
+             if (Cnt == '1) begin // when R4 is served for pre allocated time, check for R1->R2->R3->R4, else go to s0
                if (Req[1]) begin
                  nx_state = S1;
                  Clr_cnt = '1;
@@ -133,15 +134,27 @@ module rr_arb(S,Req,Gnt,clk,rst);
       endcase
   end
   
-  always_comb begin // One hot Gnt logic generation
-    if (pr_state = S4) Gnt =4'b1000;
-    else if (pr_state = S3) Gnt =4'b0100;
-    else if (pr_state = S2) Gnt =4'b0010;
-    else if (pr_state = S1) Gnt =4'b0001;
-    else Gnt = '0;
+  always @(pr_state,Req) begin // One hot Gnt logic generation
+    if (pr_state == S4) begin
+      Gnt =4'b1000;
+      S = Req[4];
+    end
+    else if (pr_state == S3) begin
+      Gnt =4'b0100;
+      S = Req[3];
+    end
+    else if (pr_state == S2) begin
+      Gnt =4'b0010;
+      S = Req[2];
+    end
+    else if (pr_state == S1) begin
+      Gnt =4'b0001;
+      S = Req[1];
+    end
+    else begin
+      Gnt = '0;
+      S = 'x;
+    end
   end
   
-  for (int i='1; i<5; i++) begin
-    S = (Gnt[i] && Req[i]) ? Req[i] : 'z; // S= Gnt[ one hot Req] else 'z when Gnt=0
-  end
 endmodule
