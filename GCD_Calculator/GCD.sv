@@ -38,15 +38,15 @@ module GCD (Done,Out,In,Start,clk,rst);
            end
       S1 : begin
              nx_state = S2;
-             ld_A = '1;
+             ld_A = '1; // load first number into reg A
            end
       S2 : begin
              nx_state = S3;
-             ld_B = '1;
+             ld_B = '1; // load second number into reg B
            end
       S3 : begin
              if (A > B) Gr = '1;
-             if (A == B) nx_state = S4;
+        if (A == B) nx_state = S4;// remain in this state till A=B
            end
       S4 : begin
              if (Start=='1) nx_state = S1;
@@ -59,16 +59,16 @@ module GCD (Done,Out,In,Start,clk,rst);
   always @(posedge clk or negedge rst) begin
     if (!rst) A <= '0;
     else if (ld_A) A <= In;
-    else if (Gr) A <= A - B;
+    else if (Gr) A <= A - B; //In S3, if A>B do A=A-B
   end 
   
   always @(posedge clk or negedge rst) begin
     if (!rst) B <= '0;
     else if (ld_B) B <= In;
-    else if (!Gr && (B > A)) B <= B - A;
+    else if (!Gr && (B > A)) B <= B - A; //In S3, if A<B do B=B-A
   end 
   
-  always_comb Out = (Done == '1) ? A : '0;
+  always_comb Out = (Done == '1) ? A : '0; // GCD out
   
 endmodule
  
