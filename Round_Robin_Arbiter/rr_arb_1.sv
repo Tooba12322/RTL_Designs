@@ -1,4 +1,7 @@
 // 4-master-1-slave round robin arbiter with fixed time allocation
+// There is one problem with this implementation - Even if the particular master req is zero, it will allocate fixed time slot;
+// and then checks for next req. For example, if Req[0]=1 for two cycles and then becomes 0, Gnt will be still high for Req[0] till 4 cycles;
+// This can be avoided with variable time slots, but max limit would be fixed for each Req.Please check rr_arb_2.sv
 
 module rr_arb(S,Req,Gnt,clk,rst);
   
