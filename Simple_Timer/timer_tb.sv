@@ -1,4 +1,4 @@
-// Waveform : 
+// Waveform : https://www.edaplayground.com/w/x/Jgp
 
 module timer_tb ();
   logic time_out;
@@ -17,20 +17,20 @@ module timer_tb ();
     #20 @(posedge clk);
     rst = '1;
     preset = '1;
-    preset_val = $urandom_range(0,8'h0F);
+    preset_val = $urandom_range(0,8'h0F); // preset value to load cnt
     
     #3 preset = '0;
     
     #80 @(posedge clk); 
     preset = '1;
-    preset_val = $urandom_range(0,8'h08);
+    preset_val = $urandom_range(0,8'h08); // preset sometime later again
     
     #3 preset = '0;
     
     #80 $finish;
   end
     
-  always #2 clk = !clk;
+  always #2 clk = !clk; // clk generation
   
 endmodule
 
