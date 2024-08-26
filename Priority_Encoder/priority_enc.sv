@@ -4,8 +4,8 @@ module priority_enc(Out,In0,In1,In2,In3);
   input logic In0, In1, In2, In3;
   logic Vld;
   
-  assign Vld = In0 || In1 || In2 || In3;
+  assign Vld = In0 || In1 || In2 || In3; // Vld only if one of the Req is high
   
-  assign Out = Vld ? (In3 ? '1 : (In2 ? 2'b10 : (In1 ? 2'b01 : '0))) : 'x; 
+  assign Out = Vld ? (In3 ? '1 : (In2 ? 2'b10 : (In1 ? 2'b01 : '0))) : 'x;  // out based on priority, In3 being the highest
   
 endmodule
