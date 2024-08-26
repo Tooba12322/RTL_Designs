@@ -1,4 +1,4 @@
-// Waveform : 
+// Waveform : https://www.edaplayground.com/w/x/MmF
 
 module ud_cnt_tb ();
   logic [7:0] Cnt;
