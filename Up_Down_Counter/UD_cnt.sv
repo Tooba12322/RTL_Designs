@@ -16,13 +16,13 @@ module UD_Cnt(Cnt,load,load_val,clk,rst);
   
   always @(posedge clk or negedge rst) begin
     if (!rst) load_val_ff <= '0;
-    else if (load) load_val_ff <= load_val;
+    else if (load) load_val_ff <= load_val; // flop to store load value
   end   
   
   always @(posedge clk or negedge rst) begin
     if (!rst) flag <= '0;
-    else if (Cnt + 8'd1 =='1) flag <='1;
-    else if (Cnt - 8'd1 == load_val_ff) flag <='0;
+    else if (Cnt + 8'd1 =='1) flag <='1; // if cnt has reached max limit, set the flag, start count down
+    else if (Cnt - 8'd1 == load_val_ff) flag <='0;// when cnt has reach load value, count up with flag =0
   end
     
   always @(posedge clk or negedge rst) begin
@@ -31,8 +31,8 @@ module UD_Cnt(Cnt,load,load_val,clk,rst);
     end
     else begin
       if (load) Cnt <= load_val;
-      else if (flag == '1) Cnt <= Cnt - 8'd1; 
-      else Cnt <= Cnt + 8'd1;
+      else if (flag == '1) Cnt <= Cnt - 8'd1; // when flag = 1, down counter
+      else Cnt <= Cnt + 8'd1; //when flag = 0, up counter
     end
   end
 endmodule
