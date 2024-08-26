@@ -5,7 +5,7 @@ module pr_detect (out,sr_in,clk,rst);
   output logic out;
   input logic sr_in,clk,rst;
   
-  typedef enum {EVEN, ODD} state;
+  typedef enum {EVEN, ODD} state; //states
   state pr_state,nx_state;
   
   always @(posedge clk or negedge rst) begin
@@ -20,12 +20,12 @@ module pr_detect (out,sr_in,clk,rst);
       EVEN : begin
                if (sr_in=='1) nx_state = ODD;
                else nx_state = EVEN;
-               out = '0;
+               out = '0; //even parity
              end
       ODD  : begin
                if (sr_in=='1) nx_state = EVEN;
                else nx_state = ODD;
-               out = '1;
+               out = '1; // odd parity
              end
     endcase
   end
