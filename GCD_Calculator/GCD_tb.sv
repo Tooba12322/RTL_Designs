@@ -1,4 +1,4 @@
-// Waveform : 
+// Waveform : https://www.edaplayground.com/w/x/MTh
 
 module GCD_tb ();
   
