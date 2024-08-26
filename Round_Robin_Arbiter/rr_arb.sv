@@ -16,12 +16,13 @@ module rr_arb(S,Req,Gnt,clk,rst);
     S3 = 3'b011,
     S4 = 3'b100} state;
     state pr_state,nx_state;
-  
+
+ 
   always @(posedge clk or negedge rst) begin
     if (!rst) pr_state <= S0;
     else pr_state <= nx_state;
   end 
-  
+   //counter to implement fixed time slot of 4 cycles
    always @(posedge clk or negedge rst) begin
      if (!rst || Clr_cnt) Cnt <= '0;
      else Cnt <= Cnt + 2'd1;
@@ -134,7 +135,7 @@ module rr_arb(S,Req,Gnt,clk,rst);
       endcase
   end
   
-  always @(pr_state,Req) begin // One hot Gnt logic generation
+  always @(pr_state,Req) begin // One hot Gnt logic generation, can implement with case as well
     if (pr_state == S4) begin
       Gnt =4'b1000;
       S = Req[4];
