@@ -1,23 +1,23 @@
 //16-bit ripple carry adder with flags - structural modeling
-module AND(F,A,B);
+module AND(F,A,B); // AND gate behavioural description
  output logic F;
  input logic A,B;
  assign F = A && B;
 endmodule
 
-module OR(F,A,B);
+module OR(F,A,B); // OR gate behavioural description
  output logic F;
  input logic A,B;
  assign F = A || B;
 endmodule
 
-module XOR(F,A,B);
+module XOR(F,A,B);// XOR gate behavioural description
  output logic F;
  input logic A,B;
  assign F = A ^ B;
 endmodule
 
-module FA(Co,Sum,A,B,Cin);
+module FA(Co,Sum,A,B,Cin); // Full adder structural modelling
  output logic Sum, Co;
  input logic A, B, Cin;
  logic w1,w2,w3;
@@ -31,7 +31,7 @@ module FA(Co,Sum,A,B,Cin);
 endmodule
   
 
-module adder_4b(Co,Sum,A,B,Cin);
+module adder_4b(Co,Sum,A,B,Cin); // 4-bit ripple carry adder structural modelling
  output logic [3:0]Sum;
  output logic Co;
   input logic [3:0]A;
@@ -46,7 +46,7 @@ module adder_4b(Co,Sum,A,B,Cin);
   
 endmodule  
 
-module ALU_adder_16b(Sign,Zero,Parity,Overflow,Co,Sum,A,B,Cin);
+module ALU_adder_16b(Sign,Zero,Parity,Overflow,Co,Sum,A,B,Cin); // 16-bit adder structural modelling
   output logic [15:0]Sum;
   output logic Co;
   output logic Sign,Zero,Parity,Overflow;
@@ -63,6 +63,6 @@ module ALU_adder_16b(Sign,Zero,Parity,Overflow,Co,Sum,A,B,Cin);
   assign Sign = Sum[15];
   assign Zero = ~|Sum;
   assign Parity = ~^Sum;
-  assign Overflow = (A[15] && B[15] && !Sum[15]) || (!A[15] && !B[15] && Sum[15]);
+ assign Overflow = (A[15] && B[15] && !Sum[15]) || (!A[15] && !B[15] && Sum[15]); // overflow flag when A,B -ve and sum +ve and vice versa
   
 endmodule
