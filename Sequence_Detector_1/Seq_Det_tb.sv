@@ -1,4 +1,4 @@
-// Waveform : 
+// Waveform : https://www.edaplayground.com/w/x/9TV
 
 module Seq_Det_tb ();
   
