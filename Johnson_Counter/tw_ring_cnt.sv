@@ -9,7 +9,7 @@ module tw_ring_cnt(Q,clk,rst);
   assign Fo = !Q[0];
   always @(posedge clk or negedge rst) begin
     if (!rst) Q <= '0;
-    else Q <=  {Fo,Q[3:1]}; 
+    else Q <=  {Fo,Q[3:1]}; // Feedback connection with Qbar, freq divider
   end
 endmodule 
   
