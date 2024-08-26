@@ -1,4 +1,4 @@
-// Waveform : 
+// Waveform : https://www.edaplayground.com/w/x/FcN
 
 module Seq_Det_tb ();
   
@@ -10,7 +10,7 @@ module Seq_Det_tb ();
   initial begin
     $dumpfile("Seq_Det.vcd");
     $dumpvars(0,Seq_Det_tb);
-    //$monitor($time, " rst=%b, clk=%b,  Light = %s",rst,clk,Out);   
+    //$monitor($time, " rst=%b, clk=%b, Out = %b",rst,clk,Out);   
     clk = '0;
     rst = '0;
     In = '0;
