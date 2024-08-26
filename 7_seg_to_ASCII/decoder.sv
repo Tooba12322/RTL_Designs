@@ -13,7 +13,7 @@ module Decoder(ascii_out,a,b,c,d,e,f,g);
   
   always @(*) begin
     case (Sel)
-      7'b1001000 : ascii_out = "H";
+      7'b1001000 : ascii_out = "H"; //7-seg pattern for displaying letter H
       7'b0110000 : ascii_out = "E";
       7'b1110001 : ascii_out = "L";
       7'b0000001 : ascii_out = "O";
