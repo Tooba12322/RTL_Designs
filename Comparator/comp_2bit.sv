@@ -4,10 +4,10 @@ module comp_2b(Eq,Gt,Lt,A,B);
   input logic [1:0]A,B;
   
   logic Eq_MSB; 
-  assign Eq_MSB = !(A[1] ^ B[1]);
+  assign Eq_MSB = !(A[1] ^ B[1]); // A and B have equal MSB bits
   
-  assign  Eq = (A==B) ? '1 : '0;
-  assign  Gt = ((A[1] && !B[1]) || (Eq_MSB && A[0] && !B[0])) ? '1 : '0;
-  assign  Lt = ((!A[1] && B[1]) || (Eq_MSB && !A[0] && B[0])) ? '1 : '0;
+  assign  Eq = (A==B) ? '1 : '0; // A is equal to B
+  assign  Gt = ((A[1] && !B[1]) || (Eq_MSB && A[0] && !B[0])) ? '1 : '0; // A>B
+  assign  Lt = ((!A[1] && B[1]) || (Eq_MSB && !A[0] && B[0])) ? '1 : '0; // A<B
   
 endmodule
