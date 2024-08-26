@@ -2,22 +2,13 @@
 
 1. Digital Clock: Design a basic digital clock that keeps track of hours, minutes, and seconds.
 4. PWM Generator: Implement a Pulse Width Modulation (PWM) generator with adjustable duty cycle.
-5. Serial to Parallel Converter: Create a module that converts a serial input stream into an 8-bit parallel output
-6. N-bit Register File: Design a register file with 4 registers, each 8 bits wide, with read and write functionality.
-7. Simple UART Transmitter: Implement a basic UART (Universal Asynchronous Receiver-Transmitter) transmitter module.
+6. Simple UART Transmitter: Implement a basic UART (Universal Asynchronous Receiver-Transmitter) transmitter module.
 8. Simple UART Receiver: Design a basic UART receiver module that receives and decodes serial data.
-9. Clock Divider: Create a clock divider that generates a slower clock signal from a given input clock.
+9. Clock Divider: Create a clock divider that generates a slower clock signal from a given input clock., divide by 3 clk
 10. Pulse Generator: Design a pulse generator that produces a specific width pulse at regular intervals.
 11. Simple Debounce Circuit: Implement a debouncing circuit for a single push-button input to ensure clean transitions.
-12. Memory with address decoding
 13. Memory interface
-14. Traffic light control
-15. Moore machine
-16. Mealey machine
-17. FSM examples
 18. FIFO
-19. Priority arbitor
-20. Round robin arbiter
 21. APB master interface
 22. APB slave interface
 
