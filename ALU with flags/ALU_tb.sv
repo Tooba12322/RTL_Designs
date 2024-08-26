@@ -1,4 +1,4 @@
-// Code your testbench here
+
 module ALU_tb ();
   logic [15:0] Out;
   logic Sign,Zero,Parity,Overflow;
@@ -6,13 +6,13 @@ module ALU_tb ();
   logic [15:0] B; 
   logic [2:0] Op;
   
-  ALU_16b DUT(.*);
+  ALU_16b DUT(.*); //Instantiation
   
   initial begin
     $dumpfile("ALU.vcd");
-    $dumpvars(0,ALU_tb);
+    $dumpvars(0,ALU_tb); // generate waveforms
     $monitor ($time,"  Sign=%b, Zero=%b, Parity=%b, Overflow=%b, Out=%h, Op=%b, A=%h, B=%h  ",Sign,Zero,Parity,Overflow,Out,Op,A,B);
-  
+    // Stimulus
     for (int i=0; i<4; i++) begin
       for (int j=0; j<8; j++) begin
         A = $urandom_range(0,16'hFFFF);
