@@ -1,8 +1,5 @@
 // Waveform :
 // Fixed time slots: https://www.edaplayground.com/w/x/Tw8
-// Variable time slots : 
-
-// Waveform : 
 
 module rr_arb_tb ();
  
