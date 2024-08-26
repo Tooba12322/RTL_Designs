@@ -1,4 +1,4 @@
-// 4-master-1-slave round robin arbiter with fixed time allocation
+// 4-master-1-slave round robin arbiter with variable time allocation
 
 module rr_arb(S,Req,Gnt,clk,rst);
   
@@ -40,7 +40,7 @@ module rr_arb(S,Req,Gnt,clk,rst);
              else if (Req[4]) nx_state = S4;
            end
       S1 : begin
-             if (Cnt == '1 || Req[1]=='0) begin // when R1 is served for pre allocated time, check for R2->R3->R4->R1, else go to s0
+        if (Cnt == '1 || Req[1]=='0) begin // when R1 is served for pre allocated time or is low, check for R2->R3->R4->R1, else go to s0
                if (Req[2]) begin
                  nx_state = S2;
                  Clr_cnt = '1;
@@ -63,7 +63,7 @@ module rr_arb(S,Req,Gnt,clk,rst);
              end
            end
       S2 : begin
-             if (Cnt == '1 || Req[2]=='0) begin // when R2 is served for pre allocated time, check for R3->R4->R1->R2, else go to s0
+        if (Cnt == '1 || Req[2]=='0) begin // when R2 is served for pre allocated time or is low, check for R3->R4->R1->R2, else go to s0
                if (Req[3]) begin
                  nx_state = S3;
                  Clr_cnt = '1;
@@ -86,7 +86,7 @@ module rr_arb(S,Req,Gnt,clk,rst);
              end
            end
       S3 : begin
-             if (Cnt == '1 || Req[3]=='0) begin // when R3 is served for pre allocated time, check for R4->R1->R2->R3, else go to s0
+        if (Cnt == '1 || Req[3]=='0) begin // when R3 is served for pre allocated time or is low, check for R4->R1->R2->R3, else go to s0
                if (Req[4]) begin
                  nx_state = S4;
                  Clr_cnt = '1;
@@ -109,7 +109,7 @@ module rr_arb(S,Req,Gnt,clk,rst);
              end
            end
       S4 : begin
-             if (Cnt == '1 || Req[4]=='0) begin // when R4 is served for pre allocated time, check for R1->R2->R3->R4, else go to s0
+        if (Cnt == '1 || Req[4]=='0) begin // when R4 is served for pre allocated time or is low, check for R1->R2->R3->R4, else go to s0
                if (Req[1]) begin
                  nx_state = S1;
                  Clr_cnt = '1;
@@ -134,7 +134,7 @@ module rr_arb(S,Req,Gnt,clk,rst);
       endcase
   end
   
-  always @(posedge clk or negedge rst) begin // One hot Gnt logic generation
+  always @(posedge clk or negedge rst) begin // One hot Gnt logic generation, S is high is one of the Req is asserted
     if (!rst) begin
       Gnt <= '0;
       S <= 'x;
