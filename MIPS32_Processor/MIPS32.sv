@@ -12,7 +12,7 @@ module MIPS32 (clk1,clk2,rst);
   //General Purpose Registers
   logic [31:0] IR_1,PC,NPC_1,Imm,A,B_1,ALUOUT_1,LMD;
   logic [31:0] IR_2,NPC_2,B_2,ALUOUT_2;
-  logic [31:0] IR_3,NPC_3,B_3,ALUOUT_3;
+  logic [31:0] IR_3,IR_4;
   
   logic [2:0] inst_type_1,inst_type_2,inst_type_3;
   
@@ -71,8 +71,8 @@ module MIPS32 (clk1,clk2,rst);
       A           <= '0;
       B_1         <= '0;
       Imm         <= '0;
-      NPC_2       <= NPC_1;
-      IR_2        <= IR_1;
+      NPC_2       <= '0;
+      IR_2        <= '0;
       inst_type_1 <= '0;
     end
     else if (halted == '0) begin
@@ -96,11 +96,12 @@ module MIPS32 (clk1,clk2,rst);
   // IE Stage 
   always @(posedge clk_1 or negedge rst) begin
     if (!rst) begin
-      ALUOUT           <= '0;
+      ALUOUT_1         <= '0;
       cond             <= '0;
       B_2              <= '0;
       IR_3             <= '0;
       inst_type_2      <= '0;
+      
     end
     else if (halted == '0) begin
       branched    <= '0;
@@ -110,31 +111,66 @@ module MIPS32 (clk1,clk2,rst);
       case (inst_type_1)
         RR :
           case(IR_2[31:26])
-            ADD : ALUOUT <= A + B_1;
-            SUB : ALUOUT <= A - B_1;
-            AND : ALUOUT <= A && B_1;
-            OR  : ALUOUT <= A || B_1;
-            MUL : ALUOUT <= A * B_1;
-            SLT : ALUOUT <= A < B_1;
+            ADD : ALUOUT_1 <= A + B_1;
+            SUB : ALUOUT_1 <= A - B_1;
+            AND : ALUOUT_1 <= A && B_1;
+            OR  : ALUOUT_1 <= A || B_1;
+            MUL : ALUOUT_1 <= A * B_1;
+            SLT : ALUOUT_1 <= A < B_1;
           endcase
         
         RM :
           case(IR_2[31:26])
-            ADDI : ALUOUT <= A + Imm;
-            SUBI : ALUOUT <= A - Imm;
+            ADDI : ALUOUT_1 <= A + Imm;
+            SUBI : ALUOUT_1 <= A - Imm;
           endcase
         
         LOAD,STORE :
-          ALUOUT <= A + Imm;
+          ALUOUT_1 <= A + Imm;
           B_2    <= B1;
         
         BRANCH :
-          ALUOUT <= NPC_2 + Imm;
-          cond   <= (A == '0) ? '1 : '0;
-        
-        HLT :
-          ALUOUT <= 32'bx;
-        
+          ALUOUT_1 <= NPC_2 + Imm;
+          cond   <= (A == '0) ? '1 : '0; 
+               
       endcase
     end
+    
+    //MEM Stage
+    always @(posedge clk_2 or negedge rst) begin
+      if (!rst) begin
+        inst_type_3 <= '0;
+        IR_4        <= '0;
+        ALUOUT_2    <= '0;
+        LMD         <= '0;
+      end
+      else if (halted == '0) begin
+        inst_type_3 <= inst_type_2;
+        IR_4        <= IR_3;
+        
+        case (inst_type_2)
+          RR,RM  : ALUOUT_2 <= ALUOUT_1;
+          LOAD   : LMD      <= D_Mem[ALUOUT_1];
+          STORE  : if (branched == '0) D_Mem[ALUOUT_1] <= B_2;
+        endcase
+      end
+    end
+    
+    
+    //WB Stage
+    
+   always @(posedge clk_1 or negedge rst) begin
+     if (!rst) begin
+       halted           <= '0;
+     end
+     else if (branched == '0) begin
+        case (inst_type_3)
+          RR     : Reg[IR_4[15:11]] <= ALUOUT_2;
+          RM     : Reg[IR_4[20:16]] <= ALUOUT_2;
+          LOAD   : Reg[IR_4[20:16]] <= LMD;
+          HLT    : halted <= '1;
+        endcase
+      end
+    end
+    
 endmodule
