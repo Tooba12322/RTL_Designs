@@ -52,9 +52,9 @@ module MIPS32 (clk1,clk2,rst);
     else if (halted == '0) begin
       if ((IR_3[31:26] == BEQZ && cond == '1) || 
           (IR_3[31:26] == BNEQZ && cond == '0)) begin
-        NPC_1 <= ALUOUT_1 + 32'd1;
-        PC    <= ALUOUT_1 + 32'd1;
-        IR_1  <= I_Mem[ALUOUT_1];
+        NPC_1    <= ALUOUT_1 + 32'd1;
+        PC       <= ALUOUT_1 + 32'd1;
+        IR_1     <= I_Mem[ALUOUT_1];
         branched <= '1;
       end
       else begin
@@ -93,4 +93,48 @@ module MIPS32 (clk1,clk2,rst);
     end
   end
   
+  // IE Stage 
+  always @(posedge clk_1 or negedge rst) begin
+    if (!rst) begin
+      ALUOUT           <= '0;
+      cond             <= '0;
+      B_2              <= '0;
+      IR_3             <= '0;
+      inst_type_2      <= '0;
+    end
+    else if (halted == '0) begin
+      branched    <= '0;
+      IR_3        <= IR_2;
+      inst_type_2 <= inst_type_1;
+      
+      case (inst_type_1)
+        RR :
+          case(IR_2[31:26])
+            ADD : ALUOUT <= A + B_1;
+            SUB : ALUOUT <= A - B_1;
+            AND : ALUOUT <= A && B_1;
+            OR  : ALUOUT <= A || B_1;
+            MUL : ALUOUT <= A * B_1;
+            SLT : ALUOUT <= A < B_1;
+          endcase
+        
+        RM :
+          case(IR_2[31:26])
+            ADDI : ALUOUT <= A + Imm;
+            SUBI : ALUOUT <= A - Imm;
+          endcase
+        
+        LOAD,STORE :
+          ALUOUT <= A + Imm;
+          B_2    <= B1;
+        
+        BRANCH :
+          ALUOUT <= NPC_2 + Imm;
+          cond   <= (A == '0) ? '1 : '0;
+        
+        HLT :
+          ALUOUT <= 32'bx;
+        
+      endcase
+    end
 endmodule
