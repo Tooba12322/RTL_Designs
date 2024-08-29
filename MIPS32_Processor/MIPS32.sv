@@ -40,6 +40,8 @@ module MIPS32 (clk1,clk2,rst);
   parameter BRANCH = 3'd4;
   parameter HLT    = 3'd7;
   
+  //Instruction Fetch Stage
+  
   always @(posedge clk_1 or negedge rst) begin
     if (!rst) begin
       NPC_1 <= '0;
@@ -63,5 +65,32 @@ module MIPS32 (clk1,clk2,rst);
     end
   end
   
+  //ID Stage
+  always @(posedge clk_2 or negedge rst) begin
+    if (!rst) begin
+      A           <= '0;
+      B_1         <= '0;
+      Imm         <= '0;
+      NPC_2       <= NPC_1;
+      IR_2        <= IR_1;
+      inst_type_1 <= '0;
+    end
+    else if (halted == '0) begin
+      A     <= (IR_1[25:21] == '0) ? '0 : Reg[IR_1[25:21]];
+      B_1   <= (IR_1[20:16] == '0) ? '0 : Reg[IR_1[20:16]];;
+      Imm   <= {16{IR_1[15]},IR_1[15:0]};
+      NPC_2 <= NPC_1;
+      IR_2  <= IR_1;
+      
+      case (IR_1[31:26])
+        ADD,SUB,AND,OR,MUL,SLT : inst_type_1 <= RR;
+        ADDI,SUBI              : inst_type_1 <= RM;
+        BEQZ,BNEQZ             : inst_type_1 <= BRANCH;
+        LW                     : inst_type_1 <= LOAD;
+        SW                     : inst_type_1 <= STORE;
+        HLT                    : inst_type_1 <= HLT;
+      endcase
+    end
+  end
   
 endmodule
