@@ -1,7 +1,7 @@
 // MIPS32 processor design
 
-module MIPS32 (clk1,clk2,rst);
-  input logic clk1,clk2,rst;
+module MIPS32 (clk_1,clk_2,rst);
+  input logic clk_1,clk_2,rst;
   
   logic halted, branched, cond;// Flops
   
@@ -38,7 +38,7 @@ module MIPS32 (clk1,clk2,rst);
   parameter LOAD   = 3'd2;
   parameter STORE  = 3'd3;
   parameter BRANCH = 3'd4;
-  parameter HLT    = 3'd7;
+  parameter HALT   = 3'd7;
   
   //Instruction Fetch Stage
   
@@ -78,7 +78,7 @@ module MIPS32 (clk1,clk2,rst);
     else if (halted == '0) begin
       A     <= (IR_1[25:21] == '0) ? '0 : Reg[IR_1[25:21]];
       B_1   <= (IR_1[20:16] == '0) ? '0 : Reg[IR_1[20:16]];;
-      Imm   <= {16{IR_1[15]},IR_1[15:0]};
+      Imm   <= {{16{IR_1[15]}},{IR_1[15:0]}};
       NPC_2 <= NPC_1;
       IR_2  <= IR_1;
       
@@ -88,7 +88,7 @@ module MIPS32 (clk1,clk2,rst);
         BEQZ,BNEQZ             : inst_type_1 <= BRANCH;
         LW                     : inst_type_1 <= LOAD;
         SW                     : inst_type_1 <= STORE;
-        HLT                    : inst_type_1 <= HLT;
+        HLT                    : inst_type_1 <= HALT;
       endcase
     end
   end
@@ -109,7 +109,7 @@ module MIPS32 (clk1,clk2,rst);
       inst_type_2 <= inst_type_1;
       
       case (inst_type_1)
-        RR :
+        RR         : begin
           case(IR_2[31:26])
             ADD : ALUOUT_1 <= A + B_1;
             SUB : ALUOUT_1 <= A - B_1;
@@ -118,20 +118,24 @@ module MIPS32 (clk1,clk2,rst);
             MUL : ALUOUT_1 <= A * B_1;
             SLT : ALUOUT_1 <= A < B_1;
           endcase
+        end
         
-        RM :
+        RM         : begin
           case(IR_2[31:26])
             ADDI : ALUOUT_1 <= A + Imm;
             SUBI : ALUOUT_1 <= A - Imm;
           endcase
+        end
         
-        LOAD,STORE :
+        LOAD,STORE : begin
           ALUOUT_1 <= A + Imm;
-          B_2    <= B1;
+          B_2      <= B_1;
+        end
         
-        BRANCH :
+        BRANCH     : begin
           ALUOUT_1 <= NPC_2 + Imm;
-          cond   <= (A == '0) ? '1 : '0; 
+          cond   <= (A == '0) ? '1 : '0;
+        end
                
       endcase
     end
@@ -168,7 +172,7 @@ module MIPS32 (clk1,clk2,rst);
           RR     : Reg[IR_4[15:11]] <= ALUOUT_2;
           RM     : Reg[IR_4[20:16]] <= ALUOUT_2;
           LOAD   : Reg[IR_4[20:16]] <= LMD;
-          HLT    : halted <= '1;
+          HALT    : halted <= '1;
         endcase
       end
     end
