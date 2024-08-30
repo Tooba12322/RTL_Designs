@@ -20,7 +20,7 @@ module MIPS32_tb1();
   begin
     $dumpfile("MIPS32.vcd");
     $dumpvars(0,MIPS32_tb1);
-     
+    $monitor ($time,"  R1=%b, R2=%b, R3=%b, R4=%b, R5=%b  ",DUT.Reg[1],DUT.Reg[2],DUT.Reg[3],DUT.Reg[4],DUT.Reg[5]);
     clk_1 = '0;
     clk_2 = '0;
     rst = '0;
