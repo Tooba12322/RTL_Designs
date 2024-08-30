@@ -12,4 +12,42 @@
 // HLT           - FC000000
 
 module MIPS32_tb1();
+  logic clk_1,clk_2,rst;
+  
+  MIPS32 DUT(.*);
+  
+  initial
+  begin
+    $dumpfile("MIPS32.vcd");
+    $dumpvars(0,MIPS32_tb1);
+     
+    clk_1 = '0;
+    clk_2 = '0;
+    rst = '0;
+    
+    #5 @(posedge clk_1) rst = '1;
+    
+    #100 $finish;
+  end
+  
+  always #2 clk_1 = !clk_1;  
+  always #2 clk_2 = !clk_2; 
+  
+  initial begin
+    for (int i='0; i<32; i++) begin
+      DUT.Reg[i] = i+i;
+    end
+    
+    DUT.I_Mem[0] = 32'h2801000A;
+    DUT.I_Mem[1] = 32'h28020014;
+    DUT.I_Mem[2] = 32'h28030019;
+    DUT.I_Mem[3] = 32'h0CE77800;
+    DUT.I_Mem[4] = 32'h0CE77800;
+    DUT.I_Mem[5] = 32'h00222000;
+    DUT.I_Mem[6] = 32'h0CE77800;
+    DUT.I_Mem[7] = 32'h00832800;
+    DUT.I_Mem[7] = 32'hFC000000;
+
+  end
+  
 endmodule
