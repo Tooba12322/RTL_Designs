@@ -172,7 +172,7 @@ module MIPS32 (clk_1,clk_2,rst);
           RR     : Reg[IR_4[15:11]] <= ALUOUT_2;
           RM     : Reg[IR_4[20:16]] <= ALUOUT_2;
           LOAD   : Reg[IR_4[20:16]] <= LMD;
-          HALT    : halted <= '1;
+          HALT   : halted <= '1;
         endcase
       end
     end
