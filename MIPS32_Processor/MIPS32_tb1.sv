@@ -20,18 +20,23 @@ module MIPS32_tb1();
   begin
     $dumpfile("MIPS32.vcd");
     $dumpvars(0,MIPS32_tb1);
-    $monitor ($time,"  R1=%b, R2=%b, R3=%b, R4=%b, R5=%b  ",DUT.Reg[1],DUT.Reg[2],DUT.Reg[3],DUT.Reg[4],DUT.Reg[5]);
+    $monitor ($time,"  rst=%b, clk_1=%b, clk_2=%b, R1=%d, R2=%d, R3=%d, R4=%d, R5=%d  ",rst,clk_1,clk_2,DUT.Reg[1],DUT.Reg[2],DUT.Reg[3],DUT.Reg[4],DUT.Reg[5]);
+  end
+  
+  initial begin
     clk_1 = '0;
     clk_2 = '0;
     rst = '0;
     
     #5 @(posedge clk_1) rst = '1;
     
+     repeat(20) begin
+       #2 clk_1 = '1; #2 clk_1='0;  
+       #2 clk_2 = '1; #2 clk_2='0; 
+     end
+    
     #100 $finish;
   end
-  
-  always #2 clk_1 = !clk_1;  
-  always #2 clk_2 = !clk_2; 
   
   initial begin
     for (int i='0; i<32; i++) begin
