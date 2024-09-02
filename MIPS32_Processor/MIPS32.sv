@@ -24,12 +24,13 @@ module MIPS32 (clk_1,clk_2,rst);
   parameter SLT   = 6'd4;
   parameter MUL   = 6'd5;
   parameter HLT   = 6'b1;
-  parameter LW    = 6'd6;
-  parameter SW    = 6'd7;
-  parameter ADDI  = 6'd8;
-  parameter SUBI  = 6'd9;
-  parameter BEQZ  = 6'd10;
-  parameter BNEQZ = 6'd11;
+  parameter LW    = 6'd8;
+  parameter SW    = 6'd9;
+  parameter ADDI  = 6'hA;
+  parameter SUBI  = 6'hB;
+  parameter SLTI  = 6'hC;
+  parameter BNEQZ = 6'hD;
+  parameter BEQZ  = 6'hE;
   
   
   //parameters for selecting instruction type
@@ -38,7 +39,7 @@ module MIPS32 (clk_1,clk_2,rst);
   parameter LOAD   = 3'd2;
   parameter STORE  = 3'd3;
   parameter BRANCH = 3'd4;
-  parameter HALT   = 3'd7;
+  parameter HALT   = 3'd5;
   
   //Instruction Fetch Stage
   
@@ -66,7 +67,7 @@ module MIPS32 (clk_1,clk_2,rst);
   end
   
   //ID Stage
-  always @(posedge clk_2 or negedge rst) begin
+  always @(posedge clk_1 or negedge rst) begin
     if (!rst) begin
       A           <= '0;
       B_1         <= '0;
@@ -84,7 +85,7 @@ module MIPS32 (clk_1,clk_2,rst);
       
       case (IR_1[31:26])
         ADD,SUB,AND,OR,MUL,SLT : inst_type_1 <= RR;
-        ADDI,SUBI              : inst_type_1 <= RM;
+        ADDI,SUBI,SLTI         : inst_type_1 <= RM;
         BEQZ,BNEQZ             : inst_type_1 <= BRANCH;
         LW                     : inst_type_1 <= LOAD;
         SW                     : inst_type_1 <= STORE;
@@ -124,6 +125,7 @@ module MIPS32 (clk_1,clk_2,rst);
           case(IR_2[31:26])
             ADDI : ALUOUT_1 <= A + Imm;
             SUBI : ALUOUT_1 <= A - Imm;
+            SLTI : ALUOUT_1 <= A < Imm;
           endcase
         end
         
@@ -142,7 +144,7 @@ module MIPS32 (clk_1,clk_2,rst);
   end
     
     //MEM Stage
-    always @(posedge clk_2 or negedge rst) begin
+  always @(posedge clk_1 or negedge rst) begin
       if (!rst) begin
         inst_type_3 <= '0;
         IR_4        <= '0;
