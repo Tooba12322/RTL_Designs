@@ -1,9 +1,10 @@
+
 // Write the MIPS32 assembly language program and SV testbench
 // Intializa R1=10; R2=20; R3=30
 // Add R1+R2+R3 and store result in R5
 // ADDI R1,R0,10 - 2801000A
 // ADDI R2,R0,20 - 28020014
-// ADDI R3,R0,30 - 28030019
+// ADDI R3,R0,25 - 28030019
 // OR R7,R7,R7   - 0CE77800
 // OR R7,R7,R7   - 0CE77800
 // ADD R4,R1,R2  - 00222000
@@ -28,14 +29,9 @@ module MIPS32_tb1();
     clk_2 = '0;
     rst = '0;
     
-    #5 @(posedge clk_1) rst = '1;
+    #10  rst = '1;
     
-     repeat(20) begin
-       #2 clk_1 = '1; #2 clk_1='0;  
-       #2 clk_2 = '1; #2 clk_2='0; 
-     end
-    
-    #100 $finish;
+    #60 $finish;
   end
   
   initial begin
@@ -50,9 +46,52 @@ module MIPS32_tb1();
     DUT.I_Mem[4] = 32'h0CE77800;
     DUT.I_Mem[5] = 32'h00222000;
     DUT.I_Mem[6] = 32'h0CE77800;
-    DUT.I_Mem[7] = 32'h00832800;
-    DUT.I_Mem[7] = 32'hFC000000;
+    DUT.I_Mem[7] = 32'h0CE77800;
+    DUT.I_Mem[8] = 32'h0CE77800;
+    DUT.I_Mem[9] = 32'h00832800;
+    DUT.I_Mem[10] = 32'hFC000000;
 
   end
   
+    always   #2 clk_1 = !clk_1;  
+    always   #2 clk_2 = !clk_2; 
+   
 endmodule
+
+Output :
+0  rst=0, clk_1=0, clk_2=0, R1=         2, R2=         4, R3=         6, R4=         8, R5=        10  
+                   2  rst=0, clk_1=1, clk_2=1, R1=         2, R2=         4, R3=         6, R4=         8, R5=        10  
+                   4  rst=0, clk_1=0, clk_2=0, R1=         2, R2=         4, R3=         6, R4=         8, R5=        10  
+                   6  rst=0, clk_1=1, clk_2=1, R1=         2, R2=         4, R3=         6, R4=         8, R5=        10  
+                   8  rst=0, clk_1=0, clk_2=0, R1=         2, R2=         4, R3=         6, R4=         8, R5=        10  
+                  10  rst=1, clk_1=1, clk_2=1, R1=         2, R2=         4, R3=         6, R4=         8, R5=        10  
+                  12  rst=1, clk_1=0, clk_2=0, R1=         2, R2=         4, R3=         6, R4=         8, R5=        10  
+                  14  rst=1, clk_1=1, clk_2=1, R1=         2, R2=         4, R3=         6, R4=         8, R5=        10  
+                  16  rst=1, clk_1=0, clk_2=0, R1=         2, R2=         4, R3=         6, R4=         8, R5=        10  
+                  18  rst=1, clk_1=1, clk_2=1, R1=         2, R2=         4, R3=         6, R4=         8, R5=        10  
+                  20  rst=1, clk_1=0, clk_2=0, R1=         2, R2=         4, R3=         6, R4=         8, R5=        10  
+                  22  rst=1, clk_1=1, clk_2=1, R1=         2, R2=         4, R3=         6, R4=         8, R5=        10  
+                  24  rst=1, clk_1=0, clk_2=0, R1=         2, R2=         4, R3=         6, R4=         8, R5=        10  
+                  26  rst=1, clk_1=1, clk_2=1, R1=        10, R2=         4, R3=         6, R4=         8, R5=        10  
+                  28  rst=1, clk_1=0, clk_2=0, R1=        10, R2=         4, R3=         6, R4=         8, R5=        10  
+                  30  rst=1, clk_1=1, clk_2=1, R1=        10, R2=        20, R3=         6, R4=         8, R5=        10  
+                  32  rst=1, clk_1=0, clk_2=0, R1=        10, R2=        20, R3=         6, R4=         8, R5=        10  
+                  34  rst=1, clk_1=1, clk_2=1, R1=        10, R2=        20, R3=        25, R4=         8, R5=        10  
+                  36  rst=1, clk_1=0, clk_2=0, R1=        10, R2=        20, R3=        25, R4=         8, R5=        10  
+                  38  rst=1, clk_1=1, clk_2=1, R1=        10, R2=        20, R3=        25, R4=         8, R5=        10  
+                  40  rst=1, clk_1=0, clk_2=0, R1=        10, R2=        20, R3=        25, R4=         8, R5=        10  
+                  42  rst=1, clk_1=1, clk_2=1, R1=        10, R2=        20, R3=        25, R4=         8, R5=        10  
+                  44  rst=1, clk_1=0, clk_2=0, R1=        10, R2=        20, R3=        25, R4=         8, R5=        10  
+                  46  rst=1, clk_1=1, clk_2=1, R1=        10, R2=        20, R3=        25, R4=        30, R5=        10  
+                  48  rst=1, clk_1=0, clk_2=0, R1=        10, R2=        20, R3=        25, R4=        30, R5=        10  
+                  50  rst=1, clk_1=1, clk_2=1, R1=        10, R2=        20, R3=        25, R4=        30, R5=        10  
+                  52  rst=1, clk_1=0, clk_2=0, R1=        10, R2=        20, R3=        25, R4=        30, R5=        10  
+                  54  rst=1, clk_1=1, clk_2=1, R1=        10, R2=        20, R3=        25, R4=        30, R5=        10  
+                  56  rst=1, clk_1=0, clk_2=0, R1=        10, R2=        20, R3=        25, R4=        30, R5=        10  
+                  58  rst=1, clk_1=1, clk_2=1, R1=        10, R2=        20, R3=        25, R4=        30, R5=        10  
+                  60  rst=1, clk_1=0, clk_2=0, R1=        10, R2=        20, R3=        25, R4=        30, R5=        10  
+                  62  rst=1, clk_1=1, clk_2=1, R1=        10, R2=        20, R3=        25, R4=        30, R5=        55  
+                  64  rst=1, clk_1=0, clk_2=0, R1=        10, R2=        20, R3=        25, R4=        30, R5=        55  
+                  
+testbench.sv:33: $finish called at 70 (1s)
+                 70  rst=1, clk_1=0, clk_2=0, R1=        10, R2=        20, R3=        25, R4=        30, R5=        55  
