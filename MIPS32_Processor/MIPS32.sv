@@ -67,7 +67,7 @@ module MIPS32 (clk_1,clk_2,rst);
   end
   
   //ID Stage
-  always @(posedge clk_1 or negedge rst) begin
+  always @(posedge clk_2 or negedge rst) begin
     if (!rst) begin
       A           <= '0;
       B_1         <= '0;
@@ -144,7 +144,7 @@ module MIPS32 (clk_1,clk_2,rst);
   end
     
     //MEM Stage
-  always @(posedge clk_1 or negedge rst) begin
+  always @(posedge clk_2 or negedge rst) begin
       if (!rst) begin
         inst_type_3 <= '0;
         IR_4        <= '0;
