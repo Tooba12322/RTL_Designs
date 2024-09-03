@@ -1,3 +1,4 @@
+//Waveform : https://www.edaplayground.com/w/x/Be4
 
 // Write the MIPS32 assembly language program and SV testbench
 // Intializa R1=10; R2=20; R3=30
