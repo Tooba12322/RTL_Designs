@@ -1,3 +1,4 @@
+// Waveform : https://www.edaplayground.com/w/x/EiV
 
 // Write the MIPS32 assembly language program and SV testbench
 // Intializa R1=10; R2=20; R3=30
@@ -15,13 +16,19 @@
 
 // Write the MIPS32 assembly language program and SV testbench
 // Load value of memory location 120 into Reg R2
-// Add 45 to R2 and store result in memory location 121
-// ADDI R1,R0,120 - 28020078
+// Add 93 to R2 contents and store result in memory location 121
+// ADDI R1,R0,120 - 28010078
+// OR R7,R7,R7    - 0CE77800
+// OR R7,R7,R7    - 0CE77800
 // LW R2,0 (R1)   - 20220000
 // OR R7,R7,R7    - 0CE77800
-// ADDI R2,R2,45  - 2822005D
 // OR R7,R7,R7    - 0CE77800
-// SW R2,1 (R1)   - 24420001
+// OR R7,R7,R7    - 0CE77800
+// ADDI R3,R2,93  - 2843005D
+// OR R7,R7,R7    - 0CE77800
+// OR R7,R7,R7    - 0CE77800
+// OR R7,R7,R7    - 0CE77800
+// SW R3,1 (R1)   - 24230001
 // HLT            - FC000000
 
 module MIPS32_tb2();
@@ -33,7 +40,7 @@ module MIPS32_tb2();
   begin
     $dumpfile("MIPS32.vcd");
     $dumpvars(0,MIPS32_tb2);
-    $monitor ($time,"  rst=%b, clk_1=%b, clk_2=%b, R1=%d, R2=%d, R3=%d, R4=%d, R5=%d  ",rst,clk_1,clk_2,DUT.Reg[1],DUT.Reg[2],DUT.Reg[3],DUT.Reg[4],DUT.Reg[5]);
+    $monitor ($time,"  rst=%b, clk_1=%b, clk_2=%b, R1=%d, R2=%d, R3=%d, R4=%d, R5=%d, Mem[121]=%d  ",rst,clk_1,clk_2,DUT.Reg[1],DUT.Reg[2],DUT.Reg[3],DUT.Reg[4],DUT.Reg[5],DUT.D_Mem[121]);
   end
   
   initial begin
@@ -45,9 +52,11 @@ module MIPS32_tb2();
     
     #100 rst = '0;
     
-    #10 rst = '1;
+    #20 rst = '1;
     
-    #80 $finish;
+    #75 rst = '0;
+    
+    #5 $finish;
   end
   
   initial begin
@@ -71,15 +80,22 @@ module MIPS32_tb2();
     DUT.I_Mem[9] = 32'h00832800;
     DUT.I_Mem[10] = 32'hFC000000;
 
-    #120;
-    
-    DUT.I_Mem[0] = 32'h28020078;
-    DUT.I_Mem[1] = 32'h20220000;
+    #110;
+      
+    DUT.I_Mem[0] = 32'h28010078;
+    DUT.I_Mem[1] = 32'h0CE77800;
     DUT.I_Mem[2] = 32'h0CE77800;
-    DUT.I_Mem[3] = 32'h2822005D;
-    DUT.I_Mem[4] = 32'h0CE77800;
-    DUT.I_Mem[5] = 32'h24420001;
-    DUT.I_Mem[6] = 32'hFC000000;
+    DUT.I_Mem[3] = 32'h0CE77800;
+    DUT.I_Mem[4] = 32'h20220000;
+    DUT.I_Mem[5] = 32'h0CE77800;
+    DUT.I_Mem[6] = 32'h0CE77800;
+    DUT.I_Mem[7] = 32'h0CE77800;
+    DUT.I_Mem[8] = 32'h2843005D;
+    DUT.I_Mem[9] = 32'h0CE77800;
+    DUT.I_Mem[10] = 32'h0CE77800;
+    DUT.I_Mem[11] = 32'h0CE77800;
+    DUT.I_Mem[12] = 32'h24230001;
+    DUT.I_Mem[13] = 32'hFC000000;
   end
   
     always   #2 clk_1 = !clk_1;  
