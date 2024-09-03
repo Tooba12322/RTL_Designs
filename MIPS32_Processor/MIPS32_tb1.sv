@@ -39,7 +39,9 @@ module MIPS32_tb1();
     for (int i='0; i<32; i++) begin
       DUT.Reg[i] = i+i;
     end
-    
+    for (int i='0; i<512; i++) begin
+      DUT.D_Mem[i] = i;
+    end
     DUT.I_Mem[0] = 32'h2801000A;
     DUT.I_Mem[1] = 32'h28020014;
     DUT.I_Mem[2] = 32'h28030019;
