@@ -23,7 +23,7 @@ module MIPS32 (clk_1,clk_2,rst);
   parameter OR    = 6'd3;
   parameter SLT   = 6'd4;
   parameter MUL   = 6'd5;
-  parameter HLT   = 6'b1;
+  parameter HLT   = 6'd63;
   parameter LW    = 6'd8;
   parameter SW    = 6'd9;
   parameter ADDI  = 6'hA;
