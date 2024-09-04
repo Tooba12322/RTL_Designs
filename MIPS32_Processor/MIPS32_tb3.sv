@@ -1,3 +1,4 @@
+
 //Waveform : 
 
 // Write the MIPS32 assembly language program and SV testbench 
@@ -8,10 +9,16 @@
 // OR R20,R20,R20  - 0E94A000
 // LW R3, 0 (R10)  - 21430000
 // OR R20,R20,R20  - 0E94A000
+// OR R20,R20,R20  - 0E94A000
+// OR R20,R20,R20  - 0E94A000
 // Loop : MUL R2,R2,R3  - 14431000
 // SUBI R3,R3,1    - 2C630001
-// BNEQZ R3,Loop   - 00832800
-// SW R2,-2 (R10)  - 2543FFFE
+// OR R20,R20,R20  - 0E94A000
+// OR R20,R20,R20  - 0E94A000
+// BNEQZ R3,Loop   - 3460FFFB
+// OR R20,R20,R20  - 0E94A000
+// OR R20,R20,R20  - 0E94A000
+// SW R2,-2 (R10)  - 2542FFFE
 // HLT             - FC000000
 
 module MIPS32_tb3();
@@ -33,7 +40,7 @@ module MIPS32_tb3();
     
     #10  rst = '1;
     
-    #60 $finish;
+    #180 $finish;
   end
   
   initial begin
@@ -50,11 +57,16 @@ module MIPS32_tb3();
     DUT.I_Mem[2] = 32'h0E94A000;
     DUT.I_Mem[3] = 32'h21430000;
     DUT.I_Mem[4] = 32'h0E94A000;
-    DUT.I_Mem[5] = 32'h14431000;
-    DUT.I_Mem[6] = 32'h2C630001;
-    DUT.I_Mem[7] = 32'h00832800;
-    DUT.I_Mem[8] = 32'h2543FFFE;
-    DUT.I_Mem[9] = 32'hFC000000;
+    DUT.I_Mem[5] = 32'h0E94A000;
+    DUT.I_Mem[6] = 32'h0E94A000;
+    DUT.I_Mem[7] = 32'h14431000;
+    DUT.I_Mem[8] = 32'h2C630001;
+    DUT.I_Mem[9] = 32'h0E94A000;
+    DUT.I_Mem[10] = 32'h0E94A000;
+    DUT.I_Mem[11] = 32'h3460FFFB;
+    DUT.I_Mem[12] = 32'h0E94A000;
+    DUT.I_Mem[13] = 32'h2542FFFE;
+    DUT.I_Mem[14] = 32'hFC000000;
 
   end
   
