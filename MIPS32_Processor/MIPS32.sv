@@ -51,12 +51,12 @@ module MIPS32 (clk_1,clk_2,rst);
       branched <= '0;
     end
     else if (halted == '0) begin
-      if ((IR_3[31:26] == BEQZ && cond == '1) || 
-          (IR_3[31:26] == BNEQZ && cond == '0)) begin
+      if ((IR_3[31:26] == BEQZ && cond == 1'b1) || 
+          (IR_3[31:26] == BNEQZ && cond == 1'b0)) begin
         NPC_1    <= ALUOUT_1 + 32'd1;
         PC       <= ALUOUT_1 + 32'd1;
         IR_1     <= I_Mem[ALUOUT_1];
-        branched <= '1;
+        branched <= 1'b1;
       end
       else begin
         NPC_1 <= PC + 32'd1;
@@ -136,7 +136,7 @@ module MIPS32 (clk_1,clk_2,rst);
         
         BRANCH     : begin
           ALUOUT_1 <= NPC_2 + Imm;
-          cond   <= (A == '0) ? '1 : '0;
+          cond   <= (A == '0) ? 1'b1 : '0;
         end
                
       endcase
@@ -175,7 +175,7 @@ module MIPS32 (clk_1,clk_2,rst);
           RR     : Reg[IR_4[15:11]] <= ALUOUT_2;
           RM     : Reg[IR_4[20:16]] <= ALUOUT_2;
           LOAD   : Reg[IR_4[20:16]] <= LMD;
-          HALT    : halted <= '1;
+          HALT    : halted <= 1'b1;
         endcase
       end
     end
