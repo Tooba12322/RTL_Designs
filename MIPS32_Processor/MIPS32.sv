@@ -1,20 +1,21 @@
-// MIPS32 processor design
+
+// MIPS32 pipelined processor design with limited RISC V instruction set 
 
 module MIPS32 (clk_1,clk_2,rst);
   input logic clk_1,clk_2,rst;
   
-  logic halted, branched, cond;// Flops
+  logic halted, branched, cond;// Flops, halted=1 when HLT executes, branched=1 when branch happens, cond=1/0 when branch fails BNEQZ/BEQZ
   
   logic [31:0] Reg [31:0]; // Reg bank
   logic [31:0] I_Mem [511:0];// Instruction Memory
   logic [31:0] D_Mem [511:0];// Data Memory
   
   //General Purpose Registers
-  logic [31:0] IR_1,PC,NPC_1,Imm,A,B_1,ALUOUT_1,LMD;
-  logic [31:0] IR_2,NPC_2,B_2,ALUOUT_2;
+  logic [31:0] IR_1,PC,NPC_1,Imm,A,B_1,ALUOUT_1,LMD; // general purpose registers
+  logic [31:0] IR_2,NPC_2,B_2,ALUOUT_2,ALUOUT_3;
   logic [31:0] IR_3,IR_4;
   
-  logic [2:0] inst_type_1,inst_type_2,inst_type_3;
+  logic [2:0] inst_type_1,inst_type_2,inst_type_3; // instruction type regs
   
   //parameters for selecting ALU Operations
   parameter ADD   = 6'b0;
@@ -52,21 +53,22 @@ module MIPS32 (clk_1,clk_2,rst);
     end
     else if (halted == '0) begin
       if ((IR_3[31:26] == BEQZ && cond == 1'b1) || 
-          (IR_3[31:26] == BNEQZ && cond == 1'b0)) begin
+          (IR_3[31:26] == BNEQZ && cond == 1'b0)) begin // when branching
         NPC_1    <= ALUOUT_1 + 32'd1;
         PC       <= ALUOUT_1 + 32'd1;
-        IR_1     <= I_Mem[ALUOUT_1];
+        IR_1     <= I_Mem[ALUOUT_1]; //Instruction fetched into IR from instruction mem, stored from 0 upon reset
         branched <= 1'b1;
       end
-      else begin
+      else begin // without branch PC increments by 1 to point to next instruction
         NPC_1 <= PC + 32'd1;
         PC    <= PC + 32'd1;
         IR_1  <= I_Mem[PC];
+        branched    <= '0;
       end
     end
   end
   
-  //ID Stage
+  //Instruction Decode Stage
   always @(posedge clk_2 or negedge rst) begin
     if (!rst) begin
       A           <= '0;
@@ -76,14 +78,14 @@ module MIPS32 (clk_1,clk_2,rst);
       IR_2        <= '0;
       inst_type_1 <= '0;
     end
-    else if (halted == '0) begin
-      A     <= (IR_1[25:21] == '0) ? '0 : Reg[IR_1[25:21]];
-      B_1   <= (IR_1[20:16] == '0) ? '0 : Reg[IR_1[20:16]];;
-      Imm   <= {{16{IR_1[15]}},{IR_1[15:0]}};
+    else if (halted == '0) begin // HLT not executed yet
+      A     <= (IR_1[25:21] == '0) ? '0 : Reg[IR_1[25:21]]; // RS1 stored in reg A
+      B_1   <= (IR_1[20:16] == '0) ? '0 : Reg[IR_1[20:16]]; // RS2 stored in reg B
+      Imm   <= {{16{IR_1[15]}},{IR_1[15:0]}}; // Immediate data stored in reg Imm 
       NPC_2 <= NPC_1;
       IR_2  <= IR_1;
       
-      case (IR_1[31:26])
+      case (IR_1[31:26]) // Opcode checked to determine instruction type
         ADD,SUB,AND,OR,MUL,SLT : inst_type_1 <= RR;
         ADDI,SUBI,SLTI         : inst_type_1 <= RM;
         BEQZ,BNEQZ             : inst_type_1 <= BRANCH;
@@ -94,23 +96,21 @@ module MIPS32 (clk_1,clk_2,rst);
     end
   end
   
-  // IE Stage 
+  // Instruction E Stage 
   always @(posedge clk_1 or negedge rst) begin
     if (!rst) begin
       ALUOUT_1         <= '0;
       cond             <= '0;
       B_2              <= '0;
       IR_3             <= '0;
-      inst_type_2      <= '0;
-      
+      inst_type_2      <= '0;   
     end
-    else if (halted == '0) begin
-      branched    <= '0;
+    else if (halted == '0) begin // HLT not executed yet
       IR_3        <= IR_2;
       inst_type_2 <= inst_type_1;
       
-      case (inst_type_1)
-        RR         : begin
+      case (inst_type_1) // Check instruction type to define ALU operation
+        RR         : begin // Register type instruction 
           case(IR_2[31:26])
             ADD : ALUOUT_1 <= A + B_1;
             SUB : ALUOUT_1 <= A - B_1;
@@ -121,7 +121,7 @@ module MIPS32 (clk_1,clk_2,rst);
           endcase
         end
         
-        RM         : begin
+        RM         : begin // Immediate data type instruction 
           case(IR_2[31:26])
             ADDI : ALUOUT_1 <= A + Imm;
             SUBI : ALUOUT_1 <= A - Imm;
@@ -129,21 +129,21 @@ module MIPS32 (clk_1,clk_2,rst);
           endcase
         end
         
-        LOAD,STORE : begin
+        LOAD,STORE : begin // Memory type instruction 
           ALUOUT_1 <= A + Imm;
           B_2      <= B_1;
         end
         
-        BRANCH     : begin
+        BRANCH     : begin // Branch type instruction 
           ALUOUT_1 <= NPC_2 + Imm;
-          cond   <= (A == '0) ? 1'b1 : '0;
+          cond   <= (ALUOUT_3 == '0) ? 1'b1 : '0;
         end
                
       endcase
     end
   end
     
-    //MEM Stage
+  //MEM Stage (Storing/Retreiving result to/from Data memory)
   always @(posedge clk_2 or negedge rst) begin
       if (!rst) begin
         inst_type_3 <= '0;
@@ -164,7 +164,7 @@ module MIPS32 (clk_1,clk_2,rst);
     end
     
     
-    //WB Stage
+  //Write Back Stage (Writing results back to the Destination Reg of Reg file)
     
    always @(posedge clk_1 or negedge rst) begin
      if (!rst) begin
@@ -179,5 +179,15 @@ module MIPS32 (clk_1,clk_2,rst);
         endcase
       end
     end
+  
+  // flop to set/reset cond flag after barnch decision
+   always @(posedge clk_1 or negedge rst) begin
+     if (!rst) begin
+       ALUOUT_3        <= '0;
+     end
+     else begin
+       ALUOUT_3        <= ALUOUT_2;
+     end
+   end
     
 endmodule
