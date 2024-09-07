@@ -1,5 +1,5 @@
 
-//Waveform : 
+//Waveform : https://www.edaplayground.com/w/x/K37
 
 // Write the MIPS32 assembly language program and SV testbench 
 // Compute the factorial of a number stored at memory location 200
@@ -16,7 +16,6 @@
 // OR R20,R20,R20  - 0E94A000
 // OR R20,R20,R20  - 0E94A000
 // BNEQZ R3,Loop   - 3460FFFB
-// OR R20,R20,R20  - 0E94A000
 // OR R20,R20,R20  - 0E94A000
 // SW R2,-2 (R10)  - 2542FFFE
 // HLT             - FC000000
@@ -40,7 +39,7 @@ module MIPS32_tb3();
     
     #10  rst = '1;
     
-    #180 $finish;
+    #250 $finish;
   end
   
   initial begin
@@ -74,3 +73,81 @@ module MIPS32_tb3();
     always   #2 clk_2 = !clk_2; 
    
 endmodule
+
+Output :
+0  rst=0, clk_1=0, clk_2=0, R10=        20, R2=         4, R3=         6, D_Mem[200]=         5, D_Mem[198]=         5  
+                   2  rst=0, clk_1=1, clk_2=1, R10=        20, R2=         4, R3=         6, D_Mem[200]=         5, D_Mem[198]=         5  
+                   4  rst=0, clk_1=0, clk_2=0, R10=        20, R2=         4, R3=         6, D_Mem[200]=         5, D_Mem[198]=         5  
+                   6  rst=0, clk_1=1, clk_2=1, R10=        20, R2=         4, R3=         6, D_Mem[200]=         5, D_Mem[198]=         5  
+                   8  rst=0, clk_1=0, clk_2=0, R10=        20, R2=         4, R3=         6, D_Mem[200]=         5, D_Mem[198]=         5  
+                  10  rst=1, clk_1=1, clk_2=1, R10=        20, R2=         4, R3=         6, D_Mem[200]=         5, D_Mem[198]=         5  
+                  12  rst=1, clk_1=0, clk_2=0, R10=        20, R2=         4, R3=         6, D_Mem[200]=         5, D_Mem[198]=         5  
+                 
+                  22  rst=1, clk_1=1, clk_2=1, R10=        20, R2=         4, R3=         6, D_Mem[200]=         5, D_Mem[198]=         5  
+                  24  rst=1, clk_1=0, clk_2=0, R10=        20, R2=         4, R3=         6, D_Mem[200]=         5, D_Mem[198]=         5  
+                  26  rst=1, clk_1=1, clk_2=1, R10=       200, R2=         4, R3=         6, D_Mem[200]=         5, D_Mem[198]=         5  
+                  28  rst=1, clk_1=0, clk_2=0, R10=       200, R2=         4, R3=         6, D_Mem[200]=         5, D_Mem[198]=         5  
+                  30  rst=1, clk_1=1, clk_2=1, R10=       200, R2=         1, R3=         6, D_Mem[200]=         5, D_Mem[198]=         5  
+                 
+                  36  rst=1, clk_1=0, clk_2=0, R10=       200, R2=         1, R3=         6, D_Mem[200]=         5, D_Mem[198]=         5  
+                  38  rst=1, clk_1=1, clk_2=1, R10=       200, R2=         1, R3=         5, D_Mem[200]=         5, D_Mem[198]=         5  
+                  40  rst=1, clk_1=0, clk_2=0, R10=       200, R2=         1, R3=         5, D_Mem[200]=         5, D_Mem[198]=         5  
+                  
+                  48  rst=1, clk_1=0, clk_2=0, R10=       200, R2=         1, R3=         5, D_Mem[200]=         5, D_Mem[198]=         5  
+                  50  rst=1, clk_1=1, clk_2=1, R10=       200, R2=         1, R3=         5, D_Mem[200]=         5, D_Mem[198]=         5  
+                  52  rst=1, clk_1=0, clk_2=0, R10=       200, R2=         1, R3=         5, D_Mem[200]=         5, D_Mem[198]=         5  
+                  54  rst=1, clk_1=1, clk_2=1, R10=       200, R2=         5, R3=         5, D_Mem[200]=         5, D_Mem[198]=         5  
+                  56  rst=1, clk_1=0, clk_2=0, R10=       200, R2=         5, R3=         5, D_Mem[200]=         5, D_Mem[198]=         5  
+                  58  rst=1, clk_1=1, clk_2=1, R10=       200, R2=         5, R3=         4, D_Mem[200]=         5, D_Mem[198]=         5  
+                  60  rst=1, clk_1=0, clk_2=0, R10=       200, R2=         5, R3=         4, D_Mem[200]=         5, D_Mem[198]=         5  
+                 
+                  76  rst=1, clk_1=0, clk_2=0, R10=       200, R2=         5, R3=         4, D_Mem[200]=         5, D_Mem[198]=         5  
+                  78  rst=1, clk_1=1, clk_2=1, R10=       200, R2=         5, R3=         4, D_Mem[200]=         5, D_Mem[198]=         5  
+                  80  rst=1, clk_1=0, clk_2=0, R10=       200, R2=         5, R3=         4, D_Mem[200]=         5, D_Mem[198]=         5  
+                  82  rst=1, clk_1=1, clk_2=1, R10=       200, R2=        20, R3=         4, D_Mem[200]=         5, D_Mem[198]=         5  
+                  84  rst=1, clk_1=0, clk_2=0, R10=       200, R2=        20, R3=         4, D_Mem[200]=         5, D_Mem[198]=         5  
+                  86  rst=1, clk_1=1, clk_2=1, R10=       200, R2=        20, R3=         3, D_Mem[200]=         5, D_Mem[198]=         5  
+                  88  rst=1, clk_1=0, clk_2=0, R10=       200, R2=        20, R3=         3, D_Mem[200]=         5, D_Mem[198]=         5  
+                  
+                  98  rst=1, clk_1=1, clk_2=1, R10=       200, R2=        20, R3=         3, D_Mem[200]=         5, D_Mem[198]=         5  
+                 100  rst=1, clk_1=0, clk_2=0, R10=       200, R2=        20, R3=         3, D_Mem[200]=         5, D_Mem[198]=         5  
+                 102  rst=1, clk_1=1, clk_2=1, R10=       200, R2=        20, R3=         3, D_Mem[200]=         5, D_Mem[198]=        20  
+                 104  rst=1, clk_1=0, clk_2=0, R10=       200, R2=        20, R3=         3, D_Mem[200]=         5, D_Mem[198]=        20  
+                 106  rst=1, clk_1=1, clk_2=1, R10=       200, R2=        20, R3=         3, D_Mem[200]=         5, D_Mem[198]=        20  
+                 108  rst=1, clk_1=0, clk_2=0, R10=       200, R2=        20, R3=         3, D_Mem[200]=         5, D_Mem[198]=        20  
+                 110  rst=1, clk_1=1, clk_2=1, R10=       200, R2=        60, R3=         3, D_Mem[200]=         5, D_Mem[198]=        20  
+                 112  rst=1, clk_1=0, clk_2=0, R10=       200, R2=        60, R3=         3, D_Mem[200]=         5, D_Mem[198]=        20  
+                 114  rst=1, clk_1=1, clk_2=1, R10=       200, R2=        60, R3=         2, D_Mem[200]=         5, D_Mem[198]=        20  
+                 116  rst=1, clk_1=0, clk_2=0, R10=       200, R2=        60, R3=         2, D_Mem[200]=         5, D_Mem[198]=        20  
+                 
+                 126  rst=1, clk_1=1, clk_2=1, R10=       200, R2=        60, R3=         2, D_Mem[200]=         5, D_Mem[198]=        20  
+                 128  rst=1, clk_1=0, clk_2=0, R10=       200, R2=        60, R3=         2, D_Mem[200]=         5, D_Mem[198]=        20  
+                 130  rst=1, clk_1=1, clk_2=1, R10=       200, R2=        60, R3=         2, D_Mem[200]=         5, D_Mem[198]=        60  
+                 132  rst=1, clk_1=0, clk_2=0, R10=       200, R2=        60, R3=         2, D_Mem[200]=         5, D_Mem[198]=        60  
+                 134  rst=1, clk_1=1, clk_2=1, R10=       200, R2=        60, R3=         2, D_Mem[200]=         5, D_Mem[198]=        60  
+                 136  rst=1, clk_1=0, clk_2=0, R10=       200, R2=        60, R3=         2, D_Mem[200]=         5, D_Mem[198]=        60  
+                 138  rst=1, clk_1=1, clk_2=1, R10=       200, R2=       120, R3=         2, D_Mem[200]=         5, D_Mem[198]=        60  
+                 140  rst=1, clk_1=0, clk_2=0, R10=       200, R2=       120, R3=         2, D_Mem[200]=         5, D_Mem[198]=        60  
+                 142  rst=1, clk_1=1, clk_2=1, R10=       200, R2=       120, R3=         1, D_Mem[200]=         5, D_Mem[198]=        60  
+                 144  rst=1, clk_1=0, clk_2=0, R10=       200, R2=       120, R3=         1, D_Mem[200]=         5, D_Mem[198]=        60  
+                 
+                 154  rst=1, clk_1=1, clk_2=1, R10=       200, R2=       120, R3=         1, D_Mem[200]=         5, D_Mem[198]=        60  
+                 156  rst=1, clk_1=0, clk_2=0, R10=       200, R2=       120, R3=         1, D_Mem[200]=         5, D_Mem[198]=        60  
+                 158  rst=1, clk_1=1, clk_2=1, R10=       200, R2=       120, R3=         1, D_Mem[200]=         5, D_Mem[198]=       120  
+                 160  rst=1, clk_1=0, clk_2=0, R10=       200, R2=       120, R3=         1, D_Mem[200]=         5, D_Mem[198]=       120  
+                 162  rst=1, clk_1=1, clk_2=1, R10=       200, R2=       120, R3=         1, D_Mem[200]=         5, D_Mem[198]=       120  
+                 164  rst=1, clk_1=0, clk_2=0, R10=       200, R2=       120, R3=         1, D_Mem[200]=         5, D_Mem[198]=       120  
+                 166  rst=1, clk_1=1, clk_2=1, R10=       200, R2=       120, R3=         1, D_Mem[200]=         5, D_Mem[198]=       120  
+                 168  rst=1, clk_1=0, clk_2=0, R10=       200, R2=       120, R3=         1, D_Mem[200]=         5, D_Mem[198]=       120  
+                 170  rst=1, clk_1=1, clk_2=1, R10=       200, R2=       120, R3=         0, D_Mem[200]=         5, D_Mem[198]=       120  
+                 172  rst=1, clk_1=0, clk_2=0, R10=       200, R2=       120, R3=         0, D_Mem[200]=         5, D_Mem[198]=       120  
+                
+                 246  rst=1, clk_1=1, clk_2=1, R10=       200, R2=       120, R3=         0, D_Mem[200]=         5, D_Mem[198]=       120  
+                 248  rst=1, clk_1=0, clk_2=0, R10=       200, R2=       120, R3=         0, D_Mem[200]=         5, D_Mem[198]=       120  
+                 250  rst=1, clk_1=1, clk_2=1, R10=       200, R2=       120, R3=         0, D_Mem[200]=         5, D_Mem[198]=       120  
+                 252  rst=1, clk_1=0, clk_2=0, R10=       200, R2=       120, R3=         0, D_Mem[200]=         5, D_Mem[198]=       120  
+                 254  rst=1, clk_1=1, clk_2=1, R10=       200, R2=       120, R3=         0, D_Mem[200]=         5, D_Mem[198]=       120  
+                 256  rst=1, clk_1=0, clk_2=0, R10=       200, R2=       120, R3=         0, D_Mem[200]=         5, D_Mem[198]=       120  
+                 258  rst=1, clk_1=1, clk_2=1, R10=       200, R2=       120, R3=         0, D_Mem[200]=         5, D_Mem[198]=       120  
+testbench.sv:43: $finish called at 260 (1s)
+                 260  rst=1, clk_1=0, clk_2=0, R10=       200, R2=       120, R3=         0, D_Mem[200]=         5, D_Mem[198]=       120  
