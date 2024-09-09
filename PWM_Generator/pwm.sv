@@ -1,4 +1,4 @@
-// Implement a Pulse Width Modulation (PWM) generator with adjustable duty cycle input.
+// Implement a Pulse Width Modulation (PWM) generator with adjustable duty cycle.
 
 module pwm(pwm_out,duty_cycle_val,load,clk,rst);
   
@@ -7,6 +7,7 @@ module pwm(pwm_out,duty_cycle_val,load,clk,rst);
   input logic [7:0] duty_cycle_val; // input value to set the duty cycle
   
   logic [7:0] Cnt;
+  logic [7:0] duty_cycle_val_ff;
   
   always @(posedge clk or negedge rst) begin
     if (!rst) duty_cycle_val_ff <= '0;
@@ -15,7 +16,7 @@ module pwm(pwm_out,duty_cycle_val,load,clk,rst);
   
   always @(posedge clk or negedge rst) begin
     if (!rst) Cnt <= '0;
-    else if (Cnt < 8'd100) Cnt <= Cnt + 8'd1; 
+    else if (Cnt < 8'd100) Cnt <= Cnt + 8'd1; //To define 100% as full time period of pwm signal
     else Cnt <= '0;
   end
   
