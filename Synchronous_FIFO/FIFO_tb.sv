@@ -1,6 +1,6 @@
 //Waveform : https://www.edaplayground.com/w/x/XeQ
 
-module cir_fifo_tb ();
+module FIFO_tb ();
   
   parameter depth = 16;
   parameter width = 8;
@@ -11,11 +11,11 @@ module cir_fifo_tb ();
   logic [width-1:0] wr_data; 
   logic [width-1:0] rd_data;
   
-  cir_fifo DUT(.*);
+  FIFO DUT(.*);
   
   initial begin
-    $dumpfile("cir_fifo.vcd");
-    $dumpvars(0,cir_fifo_tb);
+    $dumpfile("FIFO.vcd");
+    $dumpvars(0,FIFO_tb);
     $monitor ($time,"  rst=%b, clk=%b, wr=%b, rd=%b, FIFO[0]=%h, FIFO[1]=%h, FIFO[2]=%h, FIFO[5]=%h, FIFO[14]=%h, FIFO[15]=%h ",rst,clk,wr,rd,DUT.FIFO[0],DUT.FIFO[1],DUT.FIFO[2],DUT.FIFO[5],DUT.FIFO[14],DUT.FIFO[15]);
     
     clk = '0;
