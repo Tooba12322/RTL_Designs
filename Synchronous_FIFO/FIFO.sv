@@ -2,7 +2,7 @@
 
 // Parameterized Circular FIFO Implementation
 
-module cir_fifo(rd_data,full,empty,rd,wr,wr_data,clk,rst);
+module FIFO(rd_data,full,empty,rd,wr,wr_data,clk,rst);
   parameter depth = 16;
   parameter width = 8;
   parameter addr  = $clog2(depth);
