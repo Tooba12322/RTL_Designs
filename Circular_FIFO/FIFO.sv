@@ -1,3 +1,5 @@
+
+
 // Parameterized Circular FIFO Implementation
 
 module cir_fifo(rd_data,full,empty,rd,wr,wr_data,clk,rst);
@@ -12,6 +14,7 @@ module cir_fifo(rd_data,full,empty,rd,wr,wr_data,clk,rst);
   
   logic [addr-1:0] rd_ptr,wr_ptr;
   logic [width-1:0] FIFO [depth-1:0];
+  logic [width-1:0] rd_data_ff; 
   logic rd_ptr_ov,wr_ptr_ov;
   
   always_ff @(posedge clk or negedge rst) begin
@@ -30,12 +33,19 @@ module cir_fifo(rd_data,full,empty,rd,wr,wr_data,clk,rst);
     end
   end   
   
-  assign rd_data = (rd && !empty) ? FIFO [rd_ptr] : 8'bx;//read
+  always @(posedge clk or negedge rst) begin
+    if (!rst) rd_data_ff <= '0;
+    else if (rd && !empty) begin
+      rd_data_ff <= FIFO [rd_ptr];
+    end
+  end 
+  
+  assign rd_data =  rd_data_ff;//read
   
   always @(posedge clk or negedge rst) begin
     if (!rst) rd_ptr <= '0;
     else if (rd && !empty) begin
-      wr_ptr <= (rd_ptr == 4'd15) ? '0 : rd_ptr + 4'd1;
+      rd_ptr <= (rd_ptr == 4'd15) ? '0 : rd_ptr + 4'd1;
     end
   end 
   
@@ -49,20 +59,18 @@ module cir_fifo(rd_data,full,empty,rd,wr,wr_data,clk,rst);
     else if (rd_ptr == 4'd15 && rd && !empty) rd_ptr_ov <= !rd_ptr_ov;
   end
   
-  always @(posedge clk or negedge rst) begin
-    if (!rst) full <= '0;
-    else if (wr_ptr == rd_ptr) begin
-      full <= (wr_ptr_ov == rd_ptr_ov) ? '0 : '1;
+  always_comb begin
+    full = '0;
+    if ((wr_ptr == rd_ptr) && (wr_ptr_ov != rd_ptr_ov)) begin
+      full = '1;
     end
-    else full <= '0;
   end 
   
-  always @(posedge clk or negedge rst) begin
-    if (!rst) empty <= '1;
-    else if (wr_ptr == rd_ptr) begin
-      empty <= (wr_ptr_ov == rd_ptr_ov) ? '1 : '0;
+  always_comb begin
+    empty = '0;
+    if ((wr_ptr == rd_ptr) && (wr_ptr_ov == rd_ptr_ov)) begin
+      empty = '1;
     end
-    else empty <= '0;
   end 
-  
+        
 endmodule
