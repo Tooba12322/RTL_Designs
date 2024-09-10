@@ -55,6 +55,11 @@ Complex RTL Designs :
 3. APB slave interface
 4. Memory interface
 5. APB master
+6. FIFO flush logic
+7. UART transmitter
+8. UART reciever
+9. Debounce circuit
+10. Divide by 3 design
 
 ========================================== TBD ================================================================
 
