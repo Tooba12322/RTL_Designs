@@ -1,12 +1,65 @@
+Basic RTL implementations :
+
+1. ALU adder
+2. Binary to Gray
+3. Binary to OneHot
+4. Gray to Binary
+5. Comaprator
+6. MUX in different styles
+7. Flip Flops
+8. Johnson counter
+9. Ring counter
+10. LUT
+11. Latches
+12. LFSR
+13. 16x1 MUX structural modelling
+14. PISO shift reg
+15. PWM generator
+16. Parity detector
+17. Priority Encoder
+18. SIPO shift register
+19. Serial adder
+20. Simple timer
+21. Even Odd counter
+22. Mod-10 counter
+23. Up down counter
+24. Edge detector
+25. Variable swapping
+26. Counter with load
+27. Adder subtractor
+28. 7-Seg to ASCII
+
+Moderately difficult RTLs :
+
+1. Round Robin Arbiter
+2. Synchronous FIFO
+3. ALU with flags
+5. Gray counter
+6. Dual Gray counter
+7. GCD counter
+8. Moore Machine
+9. Multiplier
+10. Priority arbiter
+11. 32x32 Reg Bank
+12. Sequence Detector without FSM
+13. Sequence Detector Ex-1
+14. Sequence Detector Ex-2
+15. Sequence Detector Ex-3
+16. Sequence Generator
+17. Single port RAM
+
+Complex RTL Designs :
+
+1. Asynchronous FIFO
+2. MIPS32 processor design
+3. APB slave interface
+4. Memory interface
+5. APB master
+
 ========================================== TBD ================================================================
 
-1. PWM Generator: Implement a Pulse Width Modulation (PWM) generator with adjustable duty cycle.
-2. Circular FIFO
-3. Async FIFO
-4. FIFO with Priority: Design a FIFO buffer that supports priority-based insertion and retrieval of data items.
-5. Memory interface
-6. Design and verify a module which finds the second bit set from LSB for a N-bit vector.
-7. Simple UART Transmitter: Implement a basic UART (Universal Asynchronous Receiver-Transmitter) transmitter module.with configurable baud rate, parity checking, and data framing.
+1. Memory interface
+2. Simple UART Transmitter: Implement a basic UART (Universal Asynchronous Receiver-Transmitter) transmitter module.with configurable baud rate, parity checking, and data framing.
 8. Simple UART Receiver: Design a basic UART receiver module that receives and decodes serial data.
 9. Clock Divider: Create a clock divider that generates a slower clock signal from a given input clock., divide by 3 clk
 10. Debounce Circuit: Implement a debouncing circuit for a single push-button input to ensure clean transitions.
