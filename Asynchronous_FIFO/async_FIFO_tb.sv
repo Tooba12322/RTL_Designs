@@ -1,4 +1,5 @@
-//Waveform : 
+//Waveform (w_clk>r_clk) : https://www.edaplayground.com/w/x/7NW
+//Waveform (r_clk>w_clk) : https://www.edaplayground.com/w/x/4ur
 
 module async_FIFO_tb();
   
@@ -58,9 +59,13 @@ module async_FIFO_tb();
     
     #10 $finish;
   end
-    
+  // w_clk > r_clk 
   always #2 w_clk = !w_clk;
   
   always #4 r_clk = !r_clk;
+  // r_clk > w_clk
+  always #3 r_clk = !r_clk;
+  
+  always #5 w_clk = !w_clk;
 
 endmodule
