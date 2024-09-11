@@ -80,7 +80,22 @@ module async_FIFO (rd_data,full,empty,rd,wr,wr_data,r_clk,w_clk,r_rst,w_rst);
     else        bin_wr_ptr <= bin_wr_ptr_nxt;
   end
   
-          
+  assign  bin_rd_ptr_nxt = (rd & !empty) ? bin_rd_ptr + 4'd1 : bin_rd_ptr;
+  assign  bin_wr_ptr_nxt = (wr & !full)  ? bin_wr_ptr + 4'd1 : bin_wr_ptr;
+  
+  assign  gr_rd_ptr_nxt = (bin_rd_ptr_nxt>>1) ^ bin_rd_ptr_nxt;
+  assign  gr_wr_ptr_nxt = (bin_wr_ptr_nxt>>1) ^ bin_wr_ptr_nxt;
+  
+  always @(posedge r_clk or negedge r_rst) begin
+    if (!r_rst) empty <= '1;
+    else       empty  <= (gr_rd_ptr_nxt == sync_wr_ptr) ? '1 : '0;
+  end
+  
+  always @(posedge w_clk or negedge w_rst) begin
+    if (!w_rst) full <= '0;
+    else        full <= ({!gr_wr_ptr_nxt[addr:addr-1],gr_wr_ptr_nxt[addr-2:0]} == sync_rd_ptr) ? '1 : '0;
+  end
+  
 endmodule
 
 // Synchronizer module for clock domain crossing
