@@ -22,9 +22,9 @@ module async_FIFO (rd_data,full,empty,rd,wr,wr_data,r_clk,w_clk,r_rst,w_rst);
   logic [addr:0] bin_rd_ptr,bin_wr_ptr;
   logic [addr:0] bin_rd_ptr_nxt,bin_wr_ptr_nxt;
  
-  sync rd_sync (.sync_rd_ptr(sync_o),.w_rst(rst),.w_clk(clk),.gr_rd_ptr(sync_i));
+  sync rd_sync (.sync_o(sync_rd_ptr),.rst(w_rst),.clk(w_clk),.sync_i(gr_rd_ptr));
   
-  sync wr_sync (.sync_wr_ptr(sync_o),.r_rst(rst),.r_clk(clk),.gr_wr_ptr(sync_i));
+  sync wr_sync (.sync_o(sync_wr_ptr),.rst(r_rst),.clk(r_clk),.sync_i(gr_wr_ptr));
   
   always_ff @(posedge w_clk or negedge w_rst) begin
     if (!w_rst) begin
@@ -118,6 +118,7 @@ module sync(sync_o,rst,clk,sync_i);
       Q <= sync_i;
       sync_o <= Q;
     end 
+  end
 endmodule
       
       
