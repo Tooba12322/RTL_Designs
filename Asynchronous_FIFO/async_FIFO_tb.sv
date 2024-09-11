@@ -1,6 +1,6 @@
 //Waveform : 
 
-module async_FIFO_tb ();
+module async_FIFO_tb();
   
   parameter depth = 8;
   parameter width = 8;
@@ -16,7 +16,7 @@ module async_FIFO_tb ();
   initial begin
     $dumpfile("async_FIFO.vcd");
     $dumpvars(0,async_FIFO_tb);
-    $monitor ($time,"  r_rst=%b, r_clk=%b, w_rst=%b, w_clk=%b,  wr=%b, rd=%b, FIFO[0]=%h, FIFO[1]=%h, FIFO[2]=%h, FIFO[5]=%h, FIFO[14]=%h, FIFO[15]=%h ",r_rst,r_clk,w_rst,w_clk,wr,rd,DUT.FIFO[0],DUT.FIFO[1],DUT.FIFO[2],DUT.FIFO[5],DUT.FIFO[14],DUT.FIFO[15]);
+    $monitor ($time,"  r_rst=%b, r_clk=%b, w_rst=%b, w_clk=%b,  wr=%b, rd=%b, FIFO[0]=%h, FIFO[1]=%h, FIFO[6]=%h, FIFO[7]=%h ",r_rst,r_clk,w_rst,w_clk,wr,rd,DUT.FIFO[0],DUT.FIFO[1],DUT.FIFO[6],DUT.FIFO[7]);
     
     r_clk = '0;
     r_rst = '0;
@@ -28,16 +28,16 @@ module async_FIFO_tb ();
     #13  w_rst = '1;
     r_rst = '1;
     #2 @(posedge w_clk) wr = '1;
-    wr_data = $urandom_range(0,16'hFFFF);
+    wr_data = $urandom_range(0,8'hFF);
     
     repeat (8) begin 
-      @(posedge w_clk) wr_data = $urandom_range(0,16'hFFFF); 
+      @(posedge w_clk) wr_data = $urandom_range(0,8'hFF); 
     end
     
     #10 wr  = '0;
     
     repeat (2) begin
-      @(posedge w_clk) wr_data = $urandom_range(0,16'hFFFF); 
+      @(posedge w_clk) wr_data = $urandom_range(0,8'hFF); 
     end
     
     #2 rd = '1;
@@ -45,10 +45,10 @@ module async_FIFO_tb ();
     #40 rd = '0;
     
     #2 @(posedge w_clk) wr = '1;
-    wr_data = $urandom_range(0,16'hFFFF);
+    wr_data = $urandom_range(0,8'hFF);
     
     repeat (4) begin 
-      @(posedge clk) wr_data = $urandom_range(0,16'hFFFF); 
+      @(posedge w_clk) wr_data = $urandom_range(0,8'hFF); 
     end
     
     wr = '0;
