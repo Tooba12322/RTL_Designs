@@ -15,11 +15,16 @@ module async_FIFO (rd_data,full,empty,rd,wr,wr_data,r_clk,w_clk,r_rst,w_rst);
   logic [width-1:0] FIFO [depth-1:0];
   logic [width-1:0] rd_data_ff; 
   logic [addr:0] sync_rd_ptr,sync_wr_ptr;
- 
- 
-  sync rd_sync (.sync_rd_ptr(sync_o),.w_rst(rst),.w_clk(clk),.rd_ptr(sync_i));
   
-  sync wr_sync (.sync_wr_ptr(sync_o),.r_rst(rst),.r_clk(clk),.wr_ptr(sync_i));
+  logic [addr:0] gr_rd_ptr,gr_wr_ptr;
+  logic [addr:0] gr_rd_ptr_nxt,gr_wr_ptr_nxt;
+  
+  logic [addr:0] bin_rd_ptr,bin_wr_ptr;
+  logic [addr:0] bin_rd_ptr_nxt,bin_wr_ptr_nxt;
+ 
+  sync rd_sync (.sync_rd_ptr(sync_o),.w_rst(rst),.w_clk(clk),.gr_rd_ptr(sync_i));
+  
+  sync wr_sync (.sync_wr_ptr(sync_o),.r_rst(rst),.r_clk(clk),.gr_wr_ptr(sync_i));
   
   always_ff @(posedge w_clk or negedge w_rst) begin
     if (!w_rst) begin
@@ -53,21 +58,29 @@ module async_FIFO (rd_data,full,empty,rd,wr,wr_data,r_clk,w_clk,r_rst,w_rst);
     end
   end 
   
-  // full and empty output implementation  
-  always_comb begin
-    full = '0;
-    if ((wr_ptr == rd_ptr) && (wr_ptr_ov != rd_ptr_ov)) begin
-      full = '1;
-    end
+  // full and empty output implementation using gray coded rd/wr ptr 
+    
+  always @(posedge r_clk or negedge r_rst) begin
+    if (!r_rst) gr_rd_ptr <= '0;
+    else        gr_rd_ptr <= gr_rd_ptr_nxt;
   end 
   
-  always_comb begin
-    empty = '0;
-    if ((wr_ptr == rd_ptr) && (wr_ptr_ov == rd_ptr_ov)) begin
-      empty = '1;
-    end
-  end 
-        
+   always @(posedge r_clk or negedge r_rst) begin
+     if (!r_rst) bin_rd_ptr <= '0;
+    else         bin_rd_ptr <= bin_rd_ptr_nxt;
+  end
+  
+  always @(posedge w_clk or negedge w_rst) begin
+    if (!w_rst) gr_wr_ptr <= '0;
+    else        gr_wr_ptr <= gr_wr_ptr_nxt;
+  end
+  
+  always @(posedge w_clk or negedge w_rst) begin
+    if (!w_rst) bin_wr_ptr <= '0;
+    else        bin_wr_ptr <= bin_wr_ptr_nxt;
+  end
+  
+          
 endmodule
 
 // Synchronizer module for clock domain crossing
