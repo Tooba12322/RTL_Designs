@@ -16,6 +16,10 @@ module async_FIFO (rd_data,full,empty,rd,wr,wr_data,r_clk,w_clk,r_rst,w_rst);
   logic [width-1:0] rd_data_ff; 
   logic [addr-1:0] sync_rd_ptr,sync_wr_ptr;
  
+ 
+  sync rd_sync (.sync_rd_ptr(sync_o),.w_rst(rst),.w_clk(clk),.rd_ptr(sync_i));
+  
+  sync wr_sync (.sync_wr_ptr(sync_o),.r_rst(rst),.r_clk(clk),.wr_ptr(sync_i));
   
   always_ff @(posedge clk or negedge rst) begin
     if (!rst) begin
