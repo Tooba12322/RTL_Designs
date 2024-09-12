@@ -36,7 +36,7 @@ module apb_1 (
   output      logic[31:0]  paddr_o,
   output      logic        pwrite_o,
   output      logic[31:0]  pwdata_o,
-  input       logic        pready_i,
+  input       logic        pready_i
   
 );
   
@@ -95,9 +95,9 @@ module apb_1 (
                 psel_nxt    = '1;
                 penable_nxt = '0;
                 pwrite_nxt  = '1;
-                pwdata_nxt  = 32'hDEAD_CAFE + (event_b_i == '1) - (event_c_i == '1);
+                pwdata_nxt  = 32'hDEAD_CAFE + pwdata;
                 nx_state    = ACCESS;
-                paddr_nxt   = (event_a_i) ? 32'h0000_1000 : (event_b_i) ? 32'h0000_2000 : 32'h0000_3000;
+                paddr_nxt   = (event_a_i) ? 32'h1000_1000 : (event_b_i) ? 32'h2000_2000 : 32'h3000_3000;
               end
              
       ACCESS : begin
