@@ -5,7 +5,7 @@
 //  - 2'b00 - No-op
 //  - 2'b01 - Read from address 0xDEAD_CAFE
 //  - 2'b10 - Increment the previously read data and store it to 0xDEAD_CAFE
-//  - 2'b11 - Invalid 
+// - 2'b11 - Invalid 
 
 module apb_2 (
   input       logic        clk,
@@ -63,7 +63,7 @@ module apb_2 (
       paddr    <= paddr_nxt;
       pwrite   <= pwrite_nxt;
       pwdata   <= pwdata_nxt;
-      prdata   <= (!pwrite && penable) ? prdata_i : '0;
+      prdata   <= (!pwrite && penable && pr_state==ACCESS) ? prdata_i : '0;
     end
   end
   
@@ -77,26 +77,24 @@ module apb_2 (
           
     case (pr_state) 
       IDLE : begin
-              if (Cnt == '0) begin
-                nx_state = GREEN;
-                ld_Cnt = '1;
-              end
-              Out = "RED"; // keep RED till cnt becomes zero 
+               if (cmd_i == 2'b10 || cmd_i == 2'b01) begin
+                 nx_state = SETUP;
+               end  
             end
+      
       SETUP : begin
-             if (Cnt == '0) begin
-               nx_state = YELLOW;
-               ld_Cnt = '1;
-             end
-             Out = "GREEN"; // keep GREEN till cnt becomes zero 
-           end
-      ACCESS : begin
-              if (Cnt == '0) begin
-                nx_state = RED;
-                ld_Cnt = '1;
+                psel_nxt    = '1;
+                penable_nxt = '0;
+                paddr_nxt   =  32'hDEAD_CAFE;
+                pwrite_nxt  = (cmd == 2'b10) ? '1 : '0;
+                pwdata_nxt  = (pwrite_nxt == '1) ? (prdata + 32'd1) : '0;                 nx_state    = ACCESS;
               end
-              Out = "YELLOW"; // keep YELLOW till cnt becomes zero 
-           end
+             
+      ACCESS : begin
+                 if (pready_i == '1) begin
+                   nx_state = (cmd != cmd_i) ? SETUP : IDLE;
+                 end
+               end
       endcase
   end
 endmodule
