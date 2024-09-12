@@ -5,7 +5,7 @@
 //  - 2'b00 - No-op
 //  - 2'b01 - Read from address 0xDEAD_CAFE
 //  - 2'b10 - Increment the previously read data and store it to 0xDEAD_CAFE
-// - 2'b11 - Invalid 
+//  - 2'b11 - Invalid 
 
 module apb_2 (
   input       logic        clk,
@@ -73,8 +73,13 @@ module apb_2 (
   end   
   
   always_comb begin
-      nx_state = pr_state;
-          
+      nx_state    = pr_state;
+      psel_nxt    = psel;
+      penable_nxt = penable;
+      paddr_nxt   = paddr;
+      pwrite_nxt  = pwrite;
+      pwdata_nxt  = pwdata;
+    
     case (pr_state) 
       IDLE : begin
                if (cmd_i == 2'b10 || cmd_i == 2'b01) begin
