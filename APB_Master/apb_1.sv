@@ -39,37 +39,43 @@ module apb_1 (
   input       logic        pready_i
   
 );
-  
+  //next values to be flopped
   logic        psel, psel_nxt;
   logic        penable, penable_nxt;
   logic[31:0]  paddr, paddr_nxt;
   logic        pwrite, pwrite_nxt;
   logic[31:0]  pwdata, pwdata_nxt;
-    
+  
+  //stae enum  
   typedef enum logic [1:0] {IDLE = 2'b00, 
     SETUP = 2'b01,
     ACCESS = 2'b10} state;
     state pr_state,nx_state;
   
+  //Driving master output from flops
   always_comb psel_o    = psel;
   always_comb penable_o = penable;
   always_comb paddr_o   = paddr;
   always_comb pwrite_o  = pwrite;
   always_comb pwdata_o  = pwdata;
+
+  //penable to be low during setup phase only
+  always @(posedge clk or negedge rst) begin
+    if (!rst) penable  <= '1;
+    else penable  <= penable_nxt;
+  end
   
   always @(posedge clk or negedge rst) begin
     if (!rst) begin
       psel     <= '0;
-      penable  <= '1;
       paddr    <= '0;
       pwrite   <= '0;
       pwdata   <= '0;
       pr_state <= '0;
     end
-    else if (pready_i) begin
+    else if (pready_i) begin //pready dependent driven output
       pr_state <= nx_state;
       psel     <= psel_nxt;
-      penable  <= penable_nxt;
       paddr    <= paddr_nxt;
       pwrite   <= pwrite_nxt;
       pwdata   <= pwdata_nxt;
@@ -77,7 +83,7 @@ module apb_1 (
   end
   
   always_comb begin
-      nx_state    = pr_state;
+      nx_state    = pr_state; //default case values
       psel_nxt    = psel;
       penable_nxt = penable;
       paddr_nxt   = paddr;
@@ -91,16 +97,16 @@ module apb_1 (
                end  
              end
       
-      SETUP : begin
+      SETUP : begin //generating write transaction signals to be driven in next cycle when pready=1
                 psel_nxt    = '1;
-                penable_nxt = '0;
                 pwrite_nxt  = '1;
                 pwdata_nxt  = 32'hDEAD_CAFE + pwdata;
                 nx_state    = ACCESS;
                 paddr_nxt   = (event_a_i) ? 32'h1000_1000 : (event_b_i) ? 32'h2000_2000 : 32'h3000_3000;
+                penable_nxt = (penable == 1 && paddr_nxt!=paddr && pready_i) ? '0 : '1; //penable to be low during setup phase only
               end
              
-      ACCESS : begin
+      ACCESS : begin // wdata latched by slave when pready=1, check for next event
                  penable_nxt = '1;
                  if (pready_i) begin
                    if (event_a_i || event_b_i || event_c_i) nx_state = SETUP; 
