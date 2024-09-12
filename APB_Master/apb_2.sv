@@ -4,7 +4,7 @@
 // TB should drive a cmd_i input decoded as:
 //  - 2'b00 - No-op
 //  - 2'b01 - Read from address 0xDEAD_CAFE
-//  - 2'b10 - Increment the previously read data and store it to 0xDEAD_CAFE
+//  - 2'b10 - Increment the previously read data and store it to 0xDEAD_CAFF
 //  - 2'b11 - Invalid 
 
 module apb_2 (
@@ -45,7 +45,7 @@ module apb_2 (
   
   always @(posedge clk or negedge rst) begin
     if (!rst) cmd <= '0;
-    else      cmd <= cmd_i;
+    else if (pready_i && pr_state!=SETUP) cmd <= cmd_i;
   end
   
   always @(posedge clk or negedge rst) begin
@@ -53,24 +53,21 @@ module apb_2 (
       psel     <= '0;
       penable  <= '1;
       paddr    <= '0;
-      pwrite   <= '0;
+      pwrite   <= '1;
       pwdata   <= '0;
       prdata   <= '0;
+      pr_state <= '0;
     end
     else if (pready_i) begin
+      pr_state <= nx_state;
       psel     <= psel_nxt;
       penable  <= penable_nxt;
       paddr    <= paddr_nxt;
       pwrite   <= pwrite_nxt;
       pwdata   <= pwdata_nxt;
-      prdata   <= (!pwrite && penable && pr_state==ACCESS) ? prdata_i : '0;
+      if (!pwrite && penable && prdata!=prdata_i) prdata <=  prdata_i;
     end
   end
-  
-  always @(posedge clk or negedge rst) begin
-    if (!rst) pr_state <= IDLE;
-    else pr_state <= nx_state;
-  end   
   
   always_comb begin
       nx_state    = pr_state;
@@ -79,7 +76,7 @@ module apb_2 (
       paddr_nxt   = paddr;
       pwrite_nxt  = pwrite;
       pwdata_nxt  = pwdata;
-    
+          
     case (pr_state) 
       IDLE : begin
                if (cmd_i == 2'b10 || cmd_i == 2'b01) begin
@@ -90,14 +87,20 @@ module apb_2 (
       SETUP : begin
                 psel_nxt    = '1;
                 penable_nxt = '0;
-                paddr_nxt   =  32'hDEAD_CAFE;
                 pwrite_nxt  = (cmd == 2'b10) ? '1 : '0;
-                pwdata_nxt  = (pwrite_nxt == '1) ? (prdata + 32'd1) : '0;                 nx_state    = ACCESS;
+                pwdata_nxt  = (pwrite_nxt == '1) ? prdata_i + 32'd1 : '0;                
+                nx_state    = ACCESS;
+                paddr_nxt   =  32'hDEAD_CAFE + (pwrite_nxt == '1);
               end
              
       ACCESS : begin
-                 if (pready_i == '1) begin
-                   nx_state = (cmd != cmd_i) ? SETUP : IDLE;
+                 penable_nxt = '1;
+                 if (pready_i) begin
+                   if (cmd_i != cmd) nx_state = SETUP; 
+                   else begin
+                     nx_state = IDLE;
+                     psel_nxt    ='0;
+                   end
                  end
                end
       endcase
