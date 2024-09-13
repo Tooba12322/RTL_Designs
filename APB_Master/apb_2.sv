@@ -49,9 +49,13 @@ module apb_2 (
   end
   
   always @(posedge clk or negedge rst) begin
+    if (!rst) penable  <= '1;
+    else penable  <= penable_nxt;
+  end
+  
+  always @(posedge clk or negedge rst) begin
     if (!rst) begin
       psel     <= '0;
-      penable  <= '1;
       paddr    <= '0;
       pwrite   <= '1;
       pwdata   <= '0;
@@ -61,7 +65,6 @@ module apb_2 (
     else if (pready_i) begin
       pr_state <= nx_state;
       psel     <= psel_nxt;
-      penable  <= penable_nxt;
       paddr    <= paddr_nxt;
       pwrite   <= pwrite_nxt;
       pwdata   <= pwdata_nxt;
@@ -86,9 +89,9 @@ module apb_2 (
       
       SETUP : begin
                 psel_nxt    = '1;
-                penable_nxt = '0;
+                penable_nxt = (penable == 1 && pready_i) ? '0 : '1; //penable to be low during setup phase only;
                 pwrite_nxt  = (cmd == 2'b10) ? '1 : '0;
-                pwdata_nxt  = (pwrite_nxt == '1) ? prdata_i + 32'd1 : '0;                
+                pwdata_nxt  = (pwrite_nxt == '1) ? prdata_i + 32'd1 : '0;  
                 nx_state    = ACCESS;
                 paddr_nxt   =  32'hDEAD_CAFE + (pwrite_nxt == '1);
               end
