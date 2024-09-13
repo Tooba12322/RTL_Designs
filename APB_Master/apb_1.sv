@@ -103,7 +103,7 @@ module apb_1 (
                 pwdata_nxt  = 32'hDEAD_CAFE + pwdata;
                 nx_state    = ACCESS;
                 paddr_nxt   = (event_a_i) ? 32'h1000_1000 : (event_b_i) ? 32'h2000_2000 : 32'h3000_3000;
-                penable_nxt = (penable == 1 && paddr_nxt!=paddr && pready_i) ? '0 : '1; //penable to be low during setup phase only
+                penable_nxt = (penable == 1 && pwdata_nxt!=pwdata && pready_i) ? '0 : '1; //penable to be low during setup phase only
               end
              
       ACCESS : begin // wdata latched by slave when pready=1, check for next event
