@@ -1,4 +1,4 @@
-//Waveform : 
+//Waveform : https://www.edaplayground.com/w/x/XeQ
 
 module FIFO_FLUSH_tb ();
   
@@ -49,7 +49,7 @@ module FIFO_FLUSH_tb ();
     wr = '0;
     rd = '1;
     
-    #15 rd = '0;
+    #50 rd = '0;
     
     #10 $finish;
   end
