@@ -35,7 +35,7 @@
 // All the flops (if any) should be positive edge triggered with asynchronous resets
 
 
-module FIFO(vld_rd_data,flush_done,rd_data,full,empty,rd,wr,wr_data,flush_req,clk,rst);
+module FIFO_FLUSH (vld_rd_data,flush_done,rd_data,full,empty,rd,wr,wr_data,flush_req,clk,rst);
   parameter depth = 32;
   parameter rd_width = 32;
   parameter wr_width = 4;
@@ -65,17 +65,19 @@ module FIFO(vld_rd_data,flush_done,rd_data,full,empty,rd,wr,wr_data,flush_req,cl
     end
   end   
   
-  always @(posedge clk or negedge rst) begin
-    if (!rst) rd_data_ff <= '0;
-    else if begin
-      rd_data_ff <= FIFO [rd_ptr];
-    end
-  end 
-  
   assign diff = wr_ptr - rd_ptr;
   assign vld_rd_data = (diff >= 6'd8) ? '1 : '0;
     
-  assign rd_data =  ((rd || flush_req) && !empty) ? vld_rd_data ? FIFO [rd_ptr+6'd4: rd_ptr] : {'0,FIFO [rd_ptr+diff:rd_ptr]} :'x;//read
+  always_comb begin
+    rd_data = '0;
+    for (int i=0; i<8 ;i++) begin
+      if ((rd || flush_req) && !empty) begin
+        if (vld_rd_data) rd_data[i] = FIFO [rd_ptr+i] 
+        else if (!vld_rd_data && i<=diff) rd_data[i] = FIFO [diff+i];//read
+        else rd_data[i] = '0;
+      end
+    end
+  end
   
   always @(posedge clk or negedge rst) begin
     if (!rst) rd_ptr <= '0;
@@ -84,13 +86,8 @@ module FIFO(vld_rd_data,flush_done,rd_data,full,empty,rd,wr,wr_data,flush_req,cl
     end
   end 
   
-  always_comb begin
-    full = '0;
-    if ({!wr_ptr[addr], wr_ptr[addr-1:0]} == rd_ptr) begin
-      full = '1;
-    end
-  end 
-  
+  assign full = ({!wr_ptr[addr], wr_ptr[addr-1:0]} == rd_ptr) ? '1 :'0;
+     
   always_comb begin
     empty = '0;
     if (wr_ptr == rd_ptr) begin
@@ -106,4 +103,3 @@ module FIFO(vld_rd_data,flush_done,rd_data,full,empty,rd,wr,wr_data,flush_req,cl
   end 
   
 endmodule
-
