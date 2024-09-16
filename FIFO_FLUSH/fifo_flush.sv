@@ -35,13 +35,13 @@
 // All the flops (if any) should be positive edge triggered with asynchronous resets
 
 
-module FIFO(rd_data_vld,flush_done,rd_data,full,empty,rd,wr,wr_data,flush_req,clk,rst);
+module FIFO(vld_rd_data,flush_done,rd_data,full,empty,rd,wr,wr_data,flush_req,clk,rst);
   parameter depth = 32;
   parameter rd_width = 32;
   parameter wr_width = 4;
   parameter addr  = $clog2(depth);
   
-  output logic full,empty,flush_done,rd_data_vld;
+  output logic full,empty,flush_done,vld_rd_data;
   input logic clk,rst,rd,wr,flush_req;
   input logic [wr_width-1:0] wr_data; 
   output logic [rd_width-1:0] rd_data; 
@@ -73,12 +73,14 @@ module FIFO(rd_data_vld,flush_done,rd_data,full,empty,rd,wr,wr_data,flush_req,cl
   end 
   
   assign diff = wr_ptr - rd_ptr;
-  assign rd_data =  ((rd && !empty) || vld_rd_data) ? (diff >= 6'd32) ? FIFO [rd_ptr+6'd4: rd_ptr] : {'0,FIFO [rd_ptr+diff:rd_ptr]} :'x;//read
+  assign vld_rd_data = (diff >= 6'd8) ? '1 : '0;
+    
+  assign rd_data =  ((rd || flush_req) && !empty) ? vld_rd_data ? FIFO [rd_ptr+6'd4: rd_ptr] : {'0,FIFO [rd_ptr+diff:rd_ptr]} :'x;//read
   
   always @(posedge clk or negedge rst) begin
     if (!rst) rd_ptr <= '0;
     else if ((rd || flush_req) && !empty) begin
-      rd_ptr <= (vld_rd_data) ? rd_ptr + 6'd4 : rd_ptr + diff;
+      rd_ptr <= (vld_rd_data) ? rd_ptr + 6'd8 : rd_ptr + diff;
     end
   end 
   
