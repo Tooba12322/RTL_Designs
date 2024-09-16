@@ -1,4 +1,4 @@
-//Waveform : https://www.edaplayground.com/w/x/XeQ
+//Waveform : 
 
 module FIFO_FLUSH_tb ();
   
@@ -23,30 +23,27 @@ module FIFO_FLUSH_tb ();
     rst = '0;
     rd  = '0;
     wr  = '0;
+    flush_req ='0;
     
     #13  rst = '1;
     #2 @(posedge clk) wr = '1;
-    wr_data = $urandom_range(0,16'hFFFF);
+    wr_data = $urandom_range(0,4'hF);
     
-    repeat (16) begin 
-      @(posedge clk) wr_data = $urandom_range(0,16'hFFFF); 
+    repeat (32) begin 
+      @(posedge clk) wr_data = $urandom_range(0,4'hF); 
     end
     
-    #10 wr  = '0;
+    wr  = '0;
     
-    repeat (2) begin
-      @(posedge clk) wr_data = $urandom_range(0,16'hFFFF); 
-    end
-    
-    #2 rd = '1;
+    #5 rd = '1;
     
     #75 rd = '0;
     
     #2 @(posedge clk) wr = '1;
-    wr_data = $urandom_range(0,16'hFFFF);
+    wr_data = $urandom_range(0,4'hF);
     
     repeat (4) begin 
-      @(posedge clk) wr_data = $urandom_range(0,16'hFFFF); 
+      @(posedge clk) wr_data = $urandom_range(0,4'hF); 
     end
     
     wr = '0;
@@ -60,4 +57,3 @@ module FIFO_FLUSH_tb ();
   always #2 clk = !clk;
 
 endmodule
-
