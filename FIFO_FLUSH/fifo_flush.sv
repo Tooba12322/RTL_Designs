@@ -27,31 +27,84 @@
 // The interface guarantees that the flush request would only be asserted if the fifo isn’t empty
 // The fifo_flush_i signal would remain asserted until the fifo_flush_done_o output is seen
 // In case fifo has partial data (data less than 32-bits) during a flush request, 
-// the specifications allow the fifo data to be padded with 0xC to form the complete 32-bits worth of data
+// the specifications allow the fifo data to be padded with 0x0 to form the complete 32-bits worth of data
 // The data written on the same cycle as when the flush request was asserted should also be flushed before the fifo_flush_done_o signal is asserted. 
 // This implies that the flush data should only consist of the data already stored in the fifo and the data written (if any) on the same cycle as the flush request was asserted.
 // The fifo should allow any new data to be written into the fifo while the flush is being serviced. 
 // The new data written one cycle after the flush request should not be given out as part of the flush request
 // All the flops (if any) should be positive edge triggered with asynchronous resets
 
-module fifo_flush (
-  input   logic         clk,
-  input   logic         reset,
 
-  input   logic         fifo_wr_valid_i,
-  input   logic [3:0]   fifo_wr_data_i,
-
-  output  logic         fifo_data_avail_o,
-  input   logic         fifo_rd_valid_i,
-  output  logic [31:0]  fifo_rd_data_o,
-
-  input   logic         fifo_flush_i,
-  output  logic         fifo_flush_done_o,
-
-  output  logic         fifo_empty_o,
-  output  logic         fifo_full_o
-);
-
+module FIFO(rd_data_vld,flush_done,rd_data,full,empty,rd,wr,wr_data,flush_req,clk,rst);
+  parameter depth = 32;
+  parameter rd_width = 32;
+  parameter wr_width = 4;
+  parameter addr  = $clog2(depth);
   
-
+  output logic full,empty,flush_done,rd_data_vld;
+  input logic clk,rst,rd,wr,flush_req;
+  input logic [wr_width-1:0] wr_data; 
+  output logic [rd_width-1:0] rd_data; 
+  
+  logic [addr:0] rd_ptr, wr_ptr;
+  logic [wr_width-1:0] FIFO [depth-1:0];
+    
+  always_ff @(posedge clk or negedge rst) begin
+    if (!rst) begin
+      for (int i=0;i<depth;i++) FIFO[i] <= '0;
+    end
+    else if (wr && !full) begin
+      FIFO[wr_ptr[addr-1:0]] <= wr_data;//write
+    end
+  end
+  
+  always @(posedge clk or negedge rst) begin
+    if (!rst) wr_ptr <= '0;
+    else if (wr && !full) begin
+      wr_ptr <= wr_ptr + 4'd1;
+    end
+  end   
+  
+  always @(posedge clk or negedge rst) begin
+    if (!rst) rd_data_ff <= '0;
+    else if begin
+      rd_data_ff <= FIFO [rd_ptr];
+    end
+  end 
+  
+  assign diff = rd_ptr - wr_ptr;
+  assign rd_data =  ((rd && !empty) || vld_rd_data) ? (diff >= 6'd32) ? FIFO [rd_ptr+6'd4: rd_ptr] : {'0,FIFO [rd_ptr+diff:rd_ptr]} :'x;//read
+  
+  always @(posedge clk or negedge rst) begin
+    if (!rst) rd_ptr <= '0;
+    else if (rd && !empty) begin
+      rd_ptr <= (rd_ptr == 4'd15) ? '0 : rd_ptr + 4'd1;
+    end
+  end 
+  
+  always @(posedge clk or negedge rst) begin
+    if (!rst) wr_ptr_ov <= '0;
+    else if (wr_ptr == 4'd15 && wr && !full) wr_ptr_ov <= !wr_ptr_ov;
+  end 
+  
+  always @(posedge clk or negedge rst) begin
+    if (!rst) rd_ptr_ov <= '0;
+    else if (rd_ptr == 4'd15 && rd && !empty) rd_ptr_ov <= !rd_ptr_ov;
+  end
+  
+  always_comb begin
+    full = '0;
+    if ((wr_ptr == rd_ptr) && (wr_ptr_ov != rd_ptr_ov)) begin
+      full = '1;
+    end
+  end 
+  
+  always_comb begin
+    empty = '0;
+    if ((wr_ptr == rd_ptr) && (wr_ptr_ov == rd_ptr_ov)) begin
+      empty = '1;
+    end
+  end 
+        
 endmodule
+
