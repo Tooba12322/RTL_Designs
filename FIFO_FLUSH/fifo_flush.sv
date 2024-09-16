@@ -46,7 +46,7 @@ module FIFO(rd_data_vld,flush_done,rd_data,full,empty,rd,wr,wr_data,flush_req,cl
   input logic [wr_width-1:0] wr_data; 
   output logic [rd_width-1:0] rd_data; 
   
-  logic [addr:0] rd_ptr, wr_ptr;
+  logic [addr:0] rd_ptr, wr_ptr, diff;
   logic [wr_width-1:0] FIFO [depth-1:0];
     
   always_ff @(posedge clk or negedge rst) begin
@@ -61,7 +61,7 @@ module FIFO(rd_data_vld,flush_done,rd_data,full,empty,rd,wr,wr_data,flush_req,cl
   always @(posedge clk or negedge rst) begin
     if (!rst) wr_ptr <= '0;
     else if (wr && !full) begin
-      wr_ptr <= wr_ptr + 4'd1;
+      wr_ptr <= wr_ptr + 6'd1;
     end
   end   
   
@@ -72,39 +72,36 @@ module FIFO(rd_data_vld,flush_done,rd_data,full,empty,rd,wr,wr_data,flush_req,cl
     end
   end 
   
-  assign diff = rd_ptr - wr_ptr;
+  assign diff = wr_ptr - rd_ptr;
   assign rd_data =  ((rd && !empty) || vld_rd_data) ? (diff >= 6'd32) ? FIFO [rd_ptr+6'd4: rd_ptr] : {'0,FIFO [rd_ptr+diff:rd_ptr]} :'x;//read
   
   always @(posedge clk or negedge rst) begin
     if (!rst) rd_ptr <= '0;
-    else if (rd && !empty) begin
-      rd_ptr <= (rd_ptr == 4'd15) ? '0 : rd_ptr + 4'd1;
+    else if ((rd || flush_req) && !empty) begin
+      rd_ptr <= (vld_rd_data) ? rd_ptr + 6'd4 : rd_ptr + diff;
     end
   end 
   
-  always @(posedge clk or negedge rst) begin
-    if (!rst) wr_ptr_ov <= '0;
-    else if (wr_ptr == 4'd15 && wr && !full) wr_ptr_ov <= !wr_ptr_ov;
-  end 
-  
-  always @(posedge clk or negedge rst) begin
-    if (!rst) rd_ptr_ov <= '0;
-    else if (rd_ptr == 4'd15 && rd && !empty) rd_ptr_ov <= !rd_ptr_ov;
-  end
-  
   always_comb begin
     full = '0;
-    if ((wr_ptr == rd_ptr) && (wr_ptr_ov != rd_ptr_ov)) begin
+    if ({!wr_ptr[addr], wr_ptr[addr-1:0]} == rd_ptr) begin
       full = '1;
     end
   end 
   
   always_comb begin
     empty = '0;
-    if ((wr_ptr == rd_ptr) && (wr_ptr_ov == rd_ptr_ov)) begin
+    if (wr_ptr == rd_ptr) begin
       empty = '1;
     end
   end 
-        
+  
+  always_comb begin
+    flush_done = '0;
+    if (flush_req && empty) begin
+      flush_done = '1;
+    end
+  end 
+  
 endmodule
 
