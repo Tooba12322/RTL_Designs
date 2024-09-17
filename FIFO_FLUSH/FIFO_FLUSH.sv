@@ -46,6 +46,7 @@ module FIFO_FLUSH (vld_rd_data,flush_done,rd_data,full,empty,rd,wr,wr_data,flush
   input logic [wr_width-1:0] wr_data; 
   output logic [rd_width-1:0] rd_data; 
   
+  logic [rd_width-1:0] rd_data_nxt,rd_data_ff;
   logic [addr:0] rd_ptr, wr_ptr, diff;
   logic [wr_width-1:0] FIFO [depth-1:0];
     
@@ -67,14 +68,22 @@ module FIFO_FLUSH (vld_rd_data,flush_done,rd_data,full,empty,rd,wr,wr_data,flush
   
   assign diff = wr_ptr - rd_ptr;
   assign vld_rd_data = (diff >= 6'd8) ? '1 : '0;
-    
+  assign rd_data =  rd_data_ff;//read
+  
+  always @(posedge clk or negedge rst) begin
+    if (!rst) rd_data_ff <= '0;
+    else begin
+      rd_data_ff <= rd_data_nxt;
+    end
+  end 
+  
   always_comb begin
-    rd_data = '0;
+    rd_data_nxt = '0;
     for (int i=0; i<8 ;i++) begin
       if ((rd || flush_req) && !empty) begin
-        if (vld_rd_data) rd_data[(i*4)+:4] = FIFO [rd_ptr[addr-1:0]+i];
-        else if (!vld_rd_data && i<=diff) rd_data[(i*4)+:4] = FIFO [diff[addr-1:0]+i];//read
-        else rd_data[(i*4)+:4] = '0;
+        if (vld_rd_data) rd_data_nxt[(i*4)+:4] = FIFO [rd_ptr[addr-1:0]+i];
+        else if (!vld_rd_data && i<=diff[addr-1:0]) rd_data_nxt[(i*4)+:4] = FIFO [i];
+        else rd_data_nxt[(i*4)+:4] = '0;
       end
     end
   end
@@ -82,7 +91,7 @@ module FIFO_FLUSH (vld_rd_data,flush_done,rd_data,full,empty,rd,wr,wr_data,flush
   always @(posedge clk or negedge rst) begin
     if (!rst) rd_ptr <= '0;
     else if ((rd || flush_req) && !empty) begin
-      rd_ptr <= (vld_rd_data) ? rd_ptr + 6'd8 : rd_ptr + diff;
+      rd_ptr <= (vld_rd_data) ? rd_ptr + 6'd8 : (wr) ? rd_ptr + diff + 6'd1 : rd_ptr + diff;
     end
   end 
   
