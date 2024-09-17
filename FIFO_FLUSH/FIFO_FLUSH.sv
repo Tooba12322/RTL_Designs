@@ -82,7 +82,8 @@ module FIFO_FLUSH (vld_rd_data,flush_done,rd_data,full,empty,rd,wr,wr_data,flush
     for (int i=0; i<8 ;i++) begin
       if ((rd || flush_req) && !empty) begin
         if (vld_rd_data) rd_data_nxt[(i*4)+:4] = FIFO [rd_ptr[addr-1:0]+i];
-        else if (!vld_rd_data && i<=diff[addr-1:0]) rd_data_nxt[(i*4)+:4] = FIFO [i];
+        else if (!vld_rd_data && i<diff) rd_data_nxt[(i*4)+:4] = FIFO [i];
+        else if (!vld_rd_data && wr && i==diff) rd_data_nxt[(i*4)+:4] = wr_data;
         else rd_data_nxt[(i*4)+:4] = '0;
       end
     end
