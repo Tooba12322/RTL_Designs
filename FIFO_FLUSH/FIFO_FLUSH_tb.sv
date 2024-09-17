@@ -1,4 +1,4 @@
-//Waveform : https://www.edaplayground.com/w/x/Fft
+//Waveform : https://www.edaplayground.com/w/x/XeQ
 
 module FIFO_FLUSH_tb ();
   
@@ -50,8 +50,9 @@ module FIFO_FLUSH_tb ();
     end
     
     wr = '0;
-    #25 flush_req = '0;
-        
+    repeat(flush_done=='1) begin
+       flush_req = (flush_done) ? '0 : '1;
+    end  
     #10 $finish;
   end
     
