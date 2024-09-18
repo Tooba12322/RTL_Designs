@@ -6,16 +6,16 @@ module apb (
   input         logic        rst,
   input         logic        psel_i,
   input         logic        penable_i,
-  input         logic [9:0]  paddr_i,
+  input         logic [3:0]  paddr_i,
   input         logic        pwrite_i,
   input         logic [31:0] pwdata_i,
   output        logic [31:0] prdata_o,
   output        logic        pready_o
 );
-
-  Memory MEM(.clk(clk),.rst(rst),.req_i()) 
-  
-
+  logic nwr;
+  assign nwr = !pwrite_i;
+  Memory MEM(.clk(clk),.rst(rst),.req_i(psel_i),.req_rnw_i(nwr),.req_addr_i(paddr_i),
+             .req_wdata_i(pwrite_i),.req_ready_o(pready_o),.req_rdata_o(prdata_o)); 
 endmodule
 
 // A memory interface
