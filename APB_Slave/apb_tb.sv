@@ -1,5 +1,5 @@
 
-// Waveform : https://www.edaplayground.com/w/x/PzZ
+// Waveform : 
 
 module apb_tb ();
   
@@ -18,7 +18,7 @@ module apb_tb ();
   initial begin
     $dumpfile("apb.vcd");
     $dumpvars(0,apb_tb);
-     
+    $monitor($time,"  rst=%b, clk=%b, req_rnw_i=%b, req_addr_i=%h, MEM[0]=%h, MEM[1]=%h, MEM[2]=%h, MEM[3]=%h, MEM[4]=%h, MEM[5]=%h, req_rdata_o = %h ",rst,clk,DUT.mem.req_rnw_i,DUT.mem.req_addr_i,DUT.mem.mem[0],DUT.mem.mem[1],DUT.mem.mem[2],DUT.mem.mem[3],DUT.mem.mem[4],DUT.mem.mem[5],DUT.mem.req_rdata_o); 
     clk       = '0;
     rst       = '0;
     psel_i    = '0;
@@ -30,52 +30,51 @@ module apb_tb ();
     #9 rst = '1;
   
     #5;
-    @ (posedge clk);
-    psel_i    = '1;
-    penable_i = '1;
-    paddr_i   = $urandom_range('0,4'hF);
-    pwrite_i  = '1;
-    pwdata_i  = $urandom_range('0,4'hF);
+    for (int i='0;i<16;i++) begin
+      #3;
+      psel_i    = $random%3;
+      penable_i = '0;
+      paddr_i   =  $urandom_range('0,4'hF);
+      pwrite_i  = '1;
+      pwdata_i  = $urandom_range('0,32'hFFFFFFFF);
     
-    #2;
-    @ (posedge clk);
-    penable_i = '0;
-    
-    #2;
-    @ (posedge clk);
-    penable_i = '1;
-    
-    #2;
-    repeat (!pready_o) begin
+      #2;
       @ (posedge clk);
-      psel_i = '1;
+      penable_i = '1;
+      
+      repeat(!pready_o) begin
+        #2;
+        @ (posedge clk) psel_i = (!pready_o) ? '1 :'0;
+      end
+      
+      #7;
+      
+    end
+    #2;
+    
+    for (int i='0;i<16;i++) begin
+      #3;
+      @ (posedge clk) psel_i    = (!pready_o) ? '0 :'1;
+      penable_i = '0;
+      paddr_i   = $urandom_range('0,4'hF);
+      pwrite_i  = '0;
+          
+      #2;
+      @ (posedge clk);
+      penable_i = '1;
+    
+      
+      repeat (!pready_o) begin
+        #2;
+        @ (posedge clk) psel_i = (!pready_o) ? '0 :'1;
+      end
+      #3;
+      @ (posedge clk) psel_i = '0;
+      #7;
+      
     end
     
-    @ (posedge clk); psel_i = '0;
-    #7;
-    @ (posedge clk);
-    psel_i    = '1;
-    penable_i = '1;
-    paddr_i   = $urandom_range('0,4'hF);
-    pwrite_i  = '0;
-    
-    #2;
-    @ (posedge clk);
-    penable_i = '0;
-    
-    #2;
-    @ (posedge clk);
-    penable_i = '1;
-    
-    #2;
-    repeat (!pready_o) begin
-      @ (posedge clk);
-      psel_i = '1;
-    end
-    
-    @ (posedge clk); psel_i = '0;
-    #7;
-    $finish;
+    #10 $finish;
   end
     
   always #2 clk = !clk;
