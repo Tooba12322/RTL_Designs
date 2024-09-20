@@ -1,5 +1,6 @@
 
-// Waveform : 
+
+// Waveform : https://www.edaplayground.com/w/x/Vse
 
 module apb_tb ();
   
@@ -31,20 +32,25 @@ module apb_tb ();
   
     #5;
     for (int i='0;i<16;i++) begin
-      #3;
-      psel_i    = $random%3;
+      wait(pready_o);
+      psel_i    = '1;
       penable_i = '0;
       paddr_i   =  $urandom_range('0,4'hF);
       pwrite_i  = '1;
       pwdata_i  = $urandom_range('0,32'hFFFFFFFF);
     
-      #2;
-      @ (posedge clk);
-      penable_i = '1;
+      #2 @ (posedge clk) penable_i = '1;
       
-      repeat(!pready_o) begin
-        #2;
-        @ (posedge clk) psel_i = (!pready_o) ? '1 :'0;
+      if (!pready_o) begin
+        wait (pready_o);
+        #3;
+        wait (pready_o);
+        #4 @ (posedge clk) psel_i = '0;
+      end
+      else begin
+        #3;
+        wait (pready_o);
+        @ (posedge clk) psel_i = '0;
       end
       
       #7;
@@ -53,23 +59,26 @@ module apb_tb ();
     #2;
     
     for (int i='0;i<16;i++) begin
-      #3;
-      @ (posedge clk) psel_i    = (!pready_o) ? '0 :'1;
+      wait(pready_o);
+      psel_i    = '1;
       penable_i = '0;
       paddr_i   = $urandom_range('0,4'hF);
       pwrite_i  = '0;
           
-      #2;
-      @ (posedge clk);
-      penable_i = '1;
-    
+      #2 @ (posedge clk) penable_i = '1;
       
-      repeat (!pready_o) begin
-        #2;
-        @ (posedge clk) psel_i = (!pready_o) ? '0 :'1;
+      if (!pready_o) begin
+        wait (pready_o);
+        #3;
+        wait (pready_o);
+        #4 @ (posedge clk) psel_i = '0;
       end
-      #3;
-      @ (posedge clk) psel_i = '0;
+      else begin
+        #3;
+        wait (pready_o);
+        #4 @ (posedge clk) psel_i = '0;
+      end
+      
       #7;
       
     end
