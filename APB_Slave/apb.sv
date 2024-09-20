@@ -1,3 +1,4 @@
+
 // Design and verify a APB slave interface which utilises the memory interface.
 // APB Slave
 
@@ -14,8 +15,8 @@ module apb (
 );
   logic nwr;
   assign nwr = !pwrite_i;
-  Memory MEM(.clk(clk),.rst(rst),.req_i(psel_i),.req_rnw_i(nwr),.req_addr_i(paddr_i),
-             .req_wdata_i(pwrite_i),.req_ready_o(pready_o),.req_rdata_o(prdata_o)); 
+  MEM mem(.clk(clk),.rst(rst),.req_i(psel_i),.req_rnw_i(nwr),.req_addr_i(paddr_i),
+          .req_wdata_i(pwdata_i),.req_ready_o(pready_o),.req_rdata_o(prdata_o)); 
 endmodule
 
 // A memory interface
@@ -43,7 +44,7 @@ module MEM (
   
   assign req_rdata_o = (req_ready_o && req_i && req_rnw_i) ? req_rdata : '0; //Drive rdata when ready ,req and rnw are high
   
-  assign req_ready_o = (req_i) ? ((cnt%2) || (cnt%3)) : '0; //logic to generate ready out
+  assign req_ready_o = ((cnt%2) && (cnt%3)) || (cnt[2]=='1); //logic to generate ready out
   
   always_ff @(posedge clk or negedge rst) begin
     if (!rst) req_rdata <= '0;
