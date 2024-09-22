@@ -52,12 +52,10 @@ Complex RTL Designs :
 
 1. Asynchronous FIFO
 2. MIPS32 processor design
-3. APB slave interface
+3. APB slave
 4. Memory interface
 5. APB master
 6. FIFO flush logic
-7. UART System
-9. Debounce circuit
 
 
 ========================================== TBD ================================================================
@@ -79,6 +77,11 @@ Complex RTL Designs :
 14. AHB Slave interface
 15. AXI master interface
 16. AXI slave interface
+17. UART System
+18.  Debounce circuit
+19.  SPI interface
+20.  JTAG interface
+
 
 more to come....
 
