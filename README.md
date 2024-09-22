@@ -65,22 +65,19 @@ Complex RTL Designs :
 2. Digital PLL: Design a Phase-Locked Loop (PLL) that locks the output frequency to the input reference frequency with adjustable phase and frequency.
 3. Cache Memory: Design a 4-way set-associative cache with a 16-entry cache size and implement cache read and write policies.
 4. Floating-Point Unit: Create a basic floating-point arithmetic unit that supports addition and subtraction operations.
-5. Bus Arbiter: Design a bus arbiter that manages access to a shared bus for multiple masters using a round-robin or priority-based scheme.
-6. DMA Controller: Design a Direct Memory Access (DMA) controller that can transfer data between memory and peripherals without CPU intervention.
-7. Cyclic Redundancy Check (CRC): Create a module that computes a CRC for error detection in data transmission.
-8. Floating-Point Multiplication: Implement a floating-point multiplier that supports IEEE 754 single-precision floating-point format.
-9. Configurable Logic Block (CLB): Create a configurable logic block with a flexible interconnect network that can be used to implement various combinational and sequential logic.
-10. Error Detection and Correction (ECC): Create an ECC module that detects and corrects single-bit errors in memory.
-11. JTAG Interface: Create a JTAG (Joint Test Action Group) interface for debugging and testing digital circuits.
-12. Synchronous FIFO with Read/Write Pointers: Design a synchronous FIFO buffer with separate read and write pointers, and implement pointer management to prevent underflow and overflow.
-13. AHB master interface
-14. AHB Slave interface
-15. AXI master interface
-16. AXI slave interface
-17. UART System
-18.  Debounce circuit
-19.  SPI interface
-20.  JTAG interface
+5. DMA Controller: Design a Direct Memory Access (DMA) controller that can transfer data between memory and peripherals without CPU intervention.
+6. Cyclic Redundancy Check (CRC): Create a module that computes a CRC for error detection in data transmission.
+7. Floating-Point Multiplication: Implement a floating-point multiplier that supports IEEE 754 single-precision floating-point format.
+8. Configurable Logic Block (CLB): Create a configurable logic block with a flexible interconnect network that can be used to implement various combinational and sequential logic.
+9. Error Detection and Correction (ECC): Create an ECC module that detects and corrects single-bit errors in memory.
+10. AHB master interface
+11. AHB Slave interface
+12. AXI master interface
+13. AXI slave interface
+14. UART System
+15. Debounce circuit
+16. SPI interface
+17. JTAG interface
 
 
 more to come....
