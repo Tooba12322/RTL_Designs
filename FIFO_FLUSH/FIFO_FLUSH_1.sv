@@ -10,15 +10,15 @@
 // Interface Definition
 // The interface to the fifo consists of the following ports:
 
-// fifo_wr_valid_i -> Input to the module which signals that write data is valid
-// fifo_wr_data_i -> The 4-bit write data input
-// fifo_data_avail_o -> Output flag which tells that a read can be issued
-// fifo_rd_valid_i -> Input to the module which signals 32-bit data is read
-// fifo_rd_data_o -> 32-bit read data associated given as output
-// fifo_flush_i -> Fifo flush input to the module
-// fifo_flush_done_o -> Output signal which marks the flush as complete
-// fifo_empty_o -> Fifo empty flag (fifo has no valid data)
-// fifo_full_o -> Fifo full flag
+// wr -> Input to the module which signals that write data is valid
+// wr_data -> The 4-bit write data input
+// vld_rd_data -> Output flag which tells that a read can be issued
+// rd -> Input to the module which signals 32-bit data is read
+// rd_data -> 32-bit read data associated given as output
+// flush_req -> Fifo flush input to the module
+// flush_done -> Output signal which marks the flush as complete
+// empty -> Fifo empty flag (fifo has no valid data)
+// full -> Fifo full flag
 
 // Interface Requirements
 // The interface guarantees that the write request will never be seen whenever fifo has 128-bits of data
