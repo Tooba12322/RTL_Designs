@@ -57,10 +57,9 @@ module FIFO_FLUSH_2 (vld_rd_data,flush_done,rd_data,full,empty,rd,wr,wr_data,flu
       for (int i=0;i<depth;i++) FIFO[i] <= '0;
     end
     else if (wr && !full) begin
-      FIFO[wr_ptr_r][wr_ptr_c+:4] <= wr_data;//write, curving out wrap bit
+      FIFO[wr_ptr_r][wr_ptr_c][0:3] <= wr_data;//write, curving out wrap bit
     end
-  end
-  
+  end  
   always @(posedge clk or negedge rst) begin
     if (!rst) wr_ptr_r <= '0;
     else if (wr && !full && wr_ptr_c==3'd7) begin
@@ -89,25 +88,22 @@ module FIFO_FLUSH_2 (vld_rd_data,flush_done,rd_data,full,empty,rd,wr,wr_data,flu
     rd_data_nxt = '0;
     if ((rd || flush_req) && !empty) begin
       if (vld_rd_data) rd_data_nxt = FIFO[rd_ptr[addr-1:0]]; //curving out wrap bit
-      else rd_data_nxt = {'0,FIFO[rd_ptr][]}; // when less than 32bits is in FIFO, but flush req comes in
-        else if (!vld_rd_data && wr && i==diff) rd_data_nxt[(i*4)+:4] = wr_data; // to ensure data out = data in at same cycle
-        else rd_data_nxt[(i*4)+:4] = '0;
-      end
+      else rd_data_nxt = {'0,FIFO[rd_ptr][wr_ptr_c][:0]}; // when less than 32bits is in FIFO, but flush req comes in
     end
   end
   
   always @(posedge clk or negedge rst) begin
     if (!rst) rd_ptr <= '0;
     else if ((rd || flush_req) && !empty) begin
-      rd_ptr <= (vld_rd_data) ? rd_ptr + 6'd8 : (wr) ? rd_ptr + diff + 6'd1 : rd_ptr + diff;  // increments rd ptr as per data read
+      rd_ptr <= rd_ptr + 3'd1;  // increments rd ptr as per data read
     end
   end 
   
-  assign full = ({!wr_ptr[addr], wr_ptr[addr-1:0]} == rd_ptr) ? '1 :'0;
+  assign full = (({!wr_ptr_r[addr], wr_ptr_r[addr-1:0]} == rd_ptr) && wr_ptr_c==3'd7) ? '1 :'0;
      
   always_comb begin
     empty = '0;
-    if (wr_ptr == rd_ptr) begin
+    if ((wr_ptr_r == rd_ptr) && wr_ptr_c=='0) begin
       empty = '1;
     end
   end 
