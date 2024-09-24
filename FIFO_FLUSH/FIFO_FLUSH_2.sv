@@ -1,3 +1,5 @@
+//Waveform : https://www.edaplayground.com/w/x/Qwx
+
 // Design a fifo which has different data widths on the read and the write interface. 
 // The write interface can send 4-bits per cycle whereas the read interface expects 32-bits per cycle.
 // Along with the asymmetrical data widths the fifo should also support the ability for the read interface to issue a flush request. 
@@ -40,7 +42,7 @@ module FIFO_FLUSH_2 (vld_rd_data,flush_done,rd_data,full,empty,rd,wr,wr_data,flu
   parameter rd_width = 32;
   parameter wr_width = 4;
   parameter addr  = $clog2(depth);
-  parameter clmn = rd_width/wr_width;
+  parameter clmn = $clog2(rd_width/wr_width);
   
   output logic full,empty,flush_done,vld_rd_data;
   input logic clk,rst,rd,wr,flush_req;
@@ -50,14 +52,16 @@ module FIFO_FLUSH_2 (vld_rd_data,flush_done,rd_data,full,empty,rd,wr,wr_data,flu
   logic [rd_width-1:0] rd_data_nxt,rd_data_ff;
   logic [addr:0] rd_ptr, wr_ptr_r;
   logic [clmn-1:0] wr_ptr_c;
-  logic [clmn-1:0][wr_width-1:0] FIFO [depth-1:0];
+  logic [rd_width-1:0] FIFO [depth-1:0];
     
   always_ff @(posedge clk or negedge rst) begin
     if (!rst) begin
       for (int i=0;i<depth;i++) FIFO[i] <= '0;
     end
     else if (wr && !full) begin
-      FIFO[wr_ptr_r][wr_ptr_c][0:3] <= wr_data;//write, curving out wrap bit
+      for (int i=0;i<4;i++) begin
+        FIFO[wr_ptr_r[addr-1:0]][wr_ptr_c*4+i] <= wr_data[i];//write, curving out wrap bit
+      end
     end
   end  
   always @(posedge clk or negedge rst) begin
@@ -74,7 +78,7 @@ module FIFO_FLUSH_2 (vld_rd_data,flush_done,rd_data,full,empty,rd,wr,wr_data,flu
     end
   end   
   
-  assign vld_rd_data = (wr_ptr_r-rd_ptr >= 3'd1) ? '1 : '0; // when 32bit data is available
+  assign vld_rd_data = (wr_ptr_r-rd_ptr >= 3'd1) && (wr_ptr_r > rd_ptr) ? '1 : '0; // when 32bit data is available
   assign rd_data =  rd_data_ff;//read
   
   always @(posedge clk or negedge rst) begin
@@ -84,11 +88,15 @@ module FIFO_FLUSH_2 (vld_rd_data,flush_done,rd_data,full,empty,rd,wr,wr_data,flu
     end
   end 
   
-  always_comb begin
+  always @(*) begin
     rd_data_nxt = '0;
     if ((rd || flush_req) && !empty) begin
-      if (vld_rd_data) rd_data_nxt = FIFO[rd_ptr[addr-1:0]]; //curving out wrap bit
-      else rd_data_nxt = {'0,FIFO[rd_ptr][wr_ptr_c][:0]}; // when less than 32bits is in FIFO, but flush req comes in
+      if (vld_rd_data) rd_data_nxt = FIFO[rd_ptr]; //curving out wrap bit
+      else begin
+        for (int i=0;i<wr_ptr_c*4;i++) begin
+          rd_data_nxt[i] = FIFO[rd_ptr[addr-1:0]][i]; // when less than 32bits is in FIFO, but flush req comes in
+        end
+      end
     end
   end
   
@@ -99,11 +107,11 @@ module FIFO_FLUSH_2 (vld_rd_data,flush_done,rd_data,full,empty,rd,wr,wr_data,flu
     end
   end 
   
-  assign full = (({!wr_ptr_r[addr], wr_ptr_r[addr-1:0]} == rd_ptr) && wr_ptr_c==3'd7) ? '1 :'0;
+  assign full = ({!wr_ptr_r[addr], wr_ptr_r[addr-1:0]} == rd_ptr) ? '1 :'0;
      
   always_comb begin
     empty = '0;
-    if ((wr_ptr_r == rd_ptr) && wr_ptr_c=='0) begin
+    if (wr_ptr_r+3'd1 == rd_ptr) begin
       empty = '1;
     end
   end 
