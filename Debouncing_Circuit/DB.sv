@@ -1,4 +1,5 @@
-// Debouncing circuit implementation usin delayed detection with delay equals to 2-3msec
+// Debouncing circuit implementation usin delayed detection with delay equals to 2-3 msec
+// Source : https://www.youtube.com/watch?v=wLqPSPC7dWE&t=494s
 
 module DB (sw,db,clk,rst);
   
