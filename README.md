@@ -47,15 +47,17 @@ Moderately difficult RTLs :
 15. Sequence Detector Ex-3
 16. Sequence Generator
 17. Single port RAM
+18. Memory interface
 
 Complex RTL Designs :
 
 1. Asynchronous FIFO
 2. MIPS32 processor design
-3. APB slave
-4. Memory interface
+3. APB slave with memory interface
+4. UART system
 5. APB master
 6. FIFO flush logic
+7. Debouncing circuit
 
 
 ========================================== TBD ================================================================
@@ -74,13 +76,12 @@ Complex RTL Designs :
 11. AHB Slave interface
 12. AXI master interface
 13. AXI slave interface
-14. UART System
-15. Debounce circuit
-16. SPI interface
-17. JTAG interface
+14. SPI interface
+15. JTAG interface
+16. Interface design
 
 
-more to come....
+many more to come....
 
 
 
