@@ -1,32 +1,48 @@
 // UART transmitter implementation 
 // Source : https://www.youtube.com/watch?v=hQrg5jIcIXE&list=PL-iIOnHwN7NUpkOWAQ9Fc7MMddai9vHvN&index=75
 
-module transmitter (sw,db,clk,rst);
+module transmitter (tx,tx_done,din,tick,tx_start,clk,rst);
   
-  output logic db;  //2-3msec delayed output
-  input logic sw,clk,rst;
+  output logic tx,tx_done; 
+  input logic tick,tx_start,clk,rst;
+  input logic [1:0] din;
 
-  logic [5:0] cnt; //counter to generate delay and timer tick
-  logic tick;// tick high every 1msec, for 100MHz clk, means after every 100 clk edges
+  logic [3:0] tick_cnt,tick_cnt_nxt; //counter to calculate number of ticks
+  logic [1:0] dbits_cnt,dbits_cnt_nxt; //counter to calculate number of data bits transmitted
+  logic [1:0] data, data_nxt;
+  logic tx_reg,tx_nxt;
    
-  typedef enum logic [2:0] {Zero = 3'd0,wait1_1 = 3'd1,wait1_2 = 3'd2,wait1_3 = 3'd3,
-                            One = 3'd4, wait0_1 = 3'd5,wait0_2 = 3'd6,wait0_3 = 3'd7} state;
+  typedef enum logic [2:0] {Idle = 3'd0,start = 3'd1,data = 3'd2,parity = 3'd3,stop = 3'd4} state;
   state pr_state,nx_state;
 
   always @(posedge clk or negedge rst) begin
-    if (!rst) cnt <= '0;
-    else if (cnt == 6'd99) cnt <= '0;
-    else cnt <= cnt + 6'd1;
+    if (!rst) begin
+      dbits_cnt <= '0;
+      data      <= '0;
+      tx_reg    <= '1;
+      tick_cnt  <= '0;
+    end
+    else begin
+      dbits_cnt <= dbits_cnt_nxt;
+      data      <= data_nxt;
+      tx_reg    <= tx_nxt;
+      tick_cnt  <= tick_cnt_nxt;
+    end
   end
   
   always @(posedge clk or negedge rst) begin
-    if (!rst) pr_state <= Zero;
+    if (!rst) pr_state <= Idle;
     else pr_state <= nx_state;
   end   
   
   always_comb begin
-      nx_state = pr_state;
-      
+      nx_state      = pr_state;
+      dbits_cnt_nxt = dbits_cnt;
+      data_nxt      = data;
+      tx_nxt        = tx_reg;
+      tick_cnt_nxt  = tick_cnt;
+      tx_done       = '0;
+    
     case (pr_state) 
       Zero    : begin
                   if (sw == '1) nx_state = wait1_1;
@@ -54,7 +70,8 @@ module transmitter (sw,db,clk,rst);
                  end
       endcase
   end
-  assign tick = (cnt==6'd99) ? '1 : '0;
-  assign db = (pr_state==One || pr_state==wait0_1 || pr_state==wait0_2 || pr_state==wait0_3);
+  
+  assign tx = tx_reg;
+  
 endmodule
  
