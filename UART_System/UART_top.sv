@@ -6,7 +6,7 @@
 module UART_top (parity_o,dout,rx_done,tx_done,din,tx_start,br_div,clk,rst);
  
   output logic rx_done,tx_done; 
-  output logic parity_o; // received all bits , assert parity as separate output
+  output logic parity_o; 
   output logic [2:0] dout;
   input logic tx_start,clk,rst;
   input logic [2:0] din;
