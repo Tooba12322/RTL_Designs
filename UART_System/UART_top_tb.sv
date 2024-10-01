@@ -6,8 +6,9 @@ module UART_top_tb();
   logic rx_done,tx_done; 
   logic parity_o; 
   logic [2:0] dout;
-  logic rx,tx_start,clk,rst;
+  logic tx_start,clk,rst;
   logic [2:0] din;
+  logic [10:0] br_div;
   
   UART_top DUT(.*);
     
