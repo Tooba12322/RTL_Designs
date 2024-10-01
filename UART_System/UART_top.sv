@@ -3,8 +3,12 @@
 // Source : https://www.youtube.com/watch?v=Sz6_yH6XGWA&list=PL-iIOnHwN7NUpkOWAQ9Fc7MMddai9vHvN&index=69
 `timescale 1ns/1ps
 
-module UART_top (parity_o,dout,rx_done,rx,tick,clk,rst);
+module UART_top (parity_o,dout,rx_done,tx_done,din,tx_start,clk,rst);
+
   
+  output logic tx,tx_done; 
+  input logic tick,tx_start,clk,rst;
+  input logic [2:0] din;
   output logic rx_done,parity_o; // received all bits , assert parity as separate output
   output logic [2:0] dout;
   input logic rx,tick,clk,rst;
