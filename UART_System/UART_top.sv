@@ -16,10 +16,12 @@ module UART_top (parity_o,dout,rx_done,tx_done,din,tx_start,br_div,clk,rst);
   logic [2:0] data_out, data_out_nxt;
   logic parity_reg, parity_nxt;
   
+  logic tick_i,tx_i;
   parameter DBITS = 3;
   
-  assign parity_o = parity_reg;
-  assign dout     = data_out;
+  BR_gen br_gen (.tick(tick_i),.rst(rst),.clk(clk),.br_div(br_div));
+  transmitter TX(.tx(tx_i),.tx_done(tx_done),.din(din),.tick(tick_i),.tx_start(tx_start),.rst(rst),.clk(clk));
+  receiver RX(.parity_o(parity_o),.dout(dout),.rx_done(rx_done),rx(tx_i),.tick(tick_i),.rst(rst),.clk(clk));
   
 endmodule
  
