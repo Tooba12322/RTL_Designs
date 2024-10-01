@@ -1,4 +1,4 @@
-// Design a UART system with both transmission and reception functionality , to transmit/recieve data from/to fast running CPU 
+// Design a UART system with both transmission and reception functionality , to transmit/recieve data serially from/to CPU 
 // UART protocol implementation 
 // Source : https://www.youtube.com/watch?v=Sz6_yH6XGWA&list=PL-iIOnHwN7NUpkOWAQ9Fc7MMddai9vHvN&index=69
 `timescale 1ns/1ps
