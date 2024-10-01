@@ -19,8 +19,16 @@ module UART_top_tb();
     
     clk      = '0;
     rst      = '0;
+    tx_start = '0;
+    din      = '0;
+    br_div   = '0;
+   
     #7 @(posedge clk) rst = '1;
     br_div = 11'd650;
+
+    #7 @(posedge clk) tx_start = '1; din = 3'd5;
+    #3 @(posedge clk) tx_start = '0;
+   
     #100000 $finish;
     
   end
