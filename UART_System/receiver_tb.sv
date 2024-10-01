@@ -3,9 +3,9 @@
 
 module receiver_tb();
  
-  logic tx,tx_done; 
-  logic tick,tx_start,clk,rst;
-  logic [2:0] din;
+  logic rx_done,parity;
+  logic [2:0] dout;
+  logic rx,tick,clk,rst;
   
   receiver DUT(.*);
     
@@ -17,18 +17,47 @@ module receiver_tb();
     clk      = '0;
     rst      = '0;
     tick     = '0;
-    din      = '0;
+    rx       = '1;
     
     #7 @(posedge clk) rst = '1;
 
-    #7 @(posedge clk) tx_start = '1; din = 3'd5;
-    #3 @(posedge clk) tx_start = '0;
-   
-    for (int i=0;i<100;i++) begin
+    #15 @(posedge clk) rx = '0;
+    
+    for (int i=0;i<17;i++) begin
       #3 @(posedge clk) tick = '1;
       #3 @(posedge clk) tick = '0;
       #162;
     end
+    #3 @(posedge clk) rx = '1;
+
+   for (int i=0;i<17;i++) begin
+      #3 @(posedge clk) tick = '1;
+      #3 @(posedge clk) tick = '0;
+      #162;
+    end
+   #3 @(posedge clk) rx = '0;
+
+   for (int i=0;i<17;i++) begin
+      #3 @(posedge clk) tick = '1;
+      #3 @(posedge clk) tick = '0;
+      #162;
+    end
+    #3 @(posedge clk) rx = '1;
+
+   for (int i=0;i<17;i++) begin
+      #3 @(posedge clk) tick = '1;
+      #3 @(posedge clk) tick = '0;
+      #162;
+    end
+   #3 @(posedge clk) rx = '0;
+
+   for (int i=0;i<17;i++) begin
+      #3 @(posedge clk) tick = '1;
+      #3 @(posedge clk) tick = '0;
+      #162;
+    end
+    #3 @(posedge clk) rx = '1;
+   
    #10 $finish;
   end
   
