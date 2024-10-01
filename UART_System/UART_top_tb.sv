@@ -1,4 +1,5 @@
-// Waveform : 
+// Waveform : https://www.edaplayground.com/w/x/SCt
+
 `timescale 1ns/1ps
 
 module UART_top_tb();
@@ -24,9 +25,9 @@ module UART_top_tb();
     br_div   = '0;
    
     #7 @(posedge clk) rst = '1;
-    br_div = 11'd650;
+    br_div = 11'd65; // for 1MHz clk, and BR=9600, this value should be 650, reduced for waveform generation and simulation time reduction
 
-    #7 @(posedge clk) tx_start = '1; din = 3'd5;
+    #7 @(posedge clk) tx_start = '1; din = 3'd1;
     #3 @(posedge clk) tx_start = '0;
    
     #100000 $finish;
