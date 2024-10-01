@@ -2,14 +2,14 @@
 // Source : https://www.youtube.com/watch?v=8M6rEm1EG4w&list=PL-iIOnHwN7NUpkOWAQ9Fc7MMddai9vHvN&index=73
 `timescale 1ns/1ps
 
-module receiver (parity,dout,rx_done,rx,tick,clk,rst);
+module receiver (parity_o,dout,rx_done,rx,tick,clk,rst);
   
-  output logic rx_done,parity;
+  output logic rx_done,parity_o; // received all bits , assert parity as separate output
   output logic [2:0] dout;
   input logic rx,tick,clk,rst;
 
   logic [3:0] tick_cnt,tick_cnt_nxt; //counter to calculate number of ticks
-  logic [1:0] dbits_cnt,dbits_cnt_nxt; //counter to calculate number of data bits transmitted
+  logic [1:0] dbits_cnt,dbits_cnt_nxt; //counter to calculate number of data bits received
   logic [2:0] data_out, data_out_nxt;
   logic parity_reg, parity_nxt;
   
@@ -46,11 +46,11 @@ module receiver (parity,dout,rx_done,rx,tick,clk,rst);
       parity_nxt    = parity_reg;
     
     case (pr_state) 
-      idle    : begin
+      idle    : begin // when rx input pin is low, means its an start bit
                   if (rx == '0) nx_state   = start;   
                 end
         
-      start   : begin
+      start   : begin // wait till mid of start bit, tick_cnt=7, why? pls refer to source video
                   if (tick=='1) begin
                     if (tick_cnt ==  4'd7) begin
                       nx_state = data;
@@ -60,7 +60,7 @@ module receiver (parity,dout,rx_done,rx,tick,clk,rst);
                   end
                 end
         
-      data    : begin
+      data    : begin // wait till mid of each data bit, tick_cnt=16, why? pls refer to source video, append each received bit to data_out reg
                   if (tick=='1) begin
                     if (tick_cnt ==  4'd15) begin
                       tick_cnt_nxt = '0;
@@ -72,7 +72,7 @@ module receiver (parity,dout,rx_done,rx,tick,clk,rst);
                   end
                 end
         
-      parity  : begin
+      parity  : begin // // wait till mid of parity bit, tick_cnt=16, why? pls refer to source video, store parity bit
                   if (tick=='1) begin
                     if (tick_cnt ==  4'd15) begin
                       nx_state = stop;
@@ -83,7 +83,7 @@ module receiver (parity,dout,rx_done,rx,tick,clk,rst);
                   end
                  end
       
-      stop    : begin
+      stop    : begin // wait till mid of stop bit, tick_cnt=16, why? pls refer to source video, drive done
                   if (tick=='1) begin
                     if (tick_cnt ==  4'd15) begin
                       nx_state = idle;
@@ -96,8 +96,8 @@ module receiver (parity,dout,rx_done,rx,tick,clk,rst);
     endcase
   end
   
-  assign parity = parity_reg;
-  assign dout   = data_out;
+  assign parity_o = parity_reg;
+  assign dout     = data_out;
   
 endmodule
  
