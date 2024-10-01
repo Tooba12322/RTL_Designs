@@ -19,9 +19,10 @@ module UART_top_tb();
     
     clk      = '0;
     rst      = '0;
-    tick     = '0;
+    #7 @(posedge clk) rst = '1;
+    br_div = 11'd650;
+    #100000 $finish;
     
-   #10 $finish;
   end
   
  always #5 clk = !clk;  
