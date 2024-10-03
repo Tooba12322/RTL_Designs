@@ -16,7 +16,7 @@ module spi_m (dout,ready,sclk,mosi,done,miso,cpol,cpha,din,dvsr,start,clk,rst);
   logic [2:0] dbits_cnt,dbits_cnt_nxt; //counter to calculate number of data bits transmitted
   logic [7:0] data_in, din_nxt; // flop for storing data thai is serially available on miso
   logic [7:0] dout_reg,dout_nxt; // flop for storing data to be serially transferred on mosi
-  logic iclk;
+  logic iclk,sclk_nxt,sclk_reg;
 
   parameter DBITS = 8; //total number of data bits to be communicated
   
@@ -29,12 +29,14 @@ module spi_m (dout,ready,sclk,mosi,done,miso,cpol,cpha,din,dvsr,start,clk,rst);
       data_in   <= '0;
       dout_reg  <= '0;
       cnt       <= '0;
+      sclk_reg  <= '0;
     end
     else begin
       dbits_cnt <= dbits_cnt_nxt;
       data_in   <= din_nxt;
       dout_reg  <= dout_nxt;
       cnt       <= cnt_nxt;
+      sclk_reg  <= sclk_nxt;
     end
   end
   
@@ -99,11 +101,12 @@ module spi_m (dout,ready,sclk,mosi,done,miso,cpol,cpha,din,dvsr,start,clk,rst);
   end
   
   //sclk generation
-  assign pclk = (nx_state==sample) || ();
-  assign sclk_nxt = (cpol) ? pclk : pclk;
+  assign iclk = (nx_state==sample && !cpha) || (nx_state==drive && cpha);
+  assign sclk_nxt = (cpol) ? !iclk : iclk;
   
-  assign dout = (done) ? data_in : '0;
-  assign mosi = dout_reg[7];
+  assign dout = (done) ? data_in : '0; // drive input reg contents at the end, should equal to 8 miso bits received serially
+  assign mosi = dout_reg[7]; // drive mosi output pin
+  assign sclk = sclk_reg; // drive sclk output
   
 endmodule
  
