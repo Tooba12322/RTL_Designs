@@ -12,29 +12,29 @@ module spi_m (dout,ready,sclk,mosi,done,miso,cpol,cpha,din,dvsr,start,clk,rst);
   input logic [7:0] din;
   input logic [15:0] dvsr;
 
-  logic [3:0] tick_cnt,tick_cnt_nxt; //counter to calculate number of ticks
-  logic [1:0] dbits_cnt,dbits_cnt_nxt; //counter to calculate number of data bits transmitted
-  logic [2:0] data_in, data_nxt; // flop for storing data to be serially transferred on tx
-  logic tx_reg,tx_nxt; // tx pin driver flop
-  logic parity_reg,parity_nxt; //parity flop
+  logic [15:0] cnt,cnt_nxt; //counter to calculate number of clks till dvsr
+  logic [2:0] dbits_cnt,dbits_cnt_nxt; //counter to calculate number of data bits transmitted
+  logic [7:0] data_in, din_nxt; // flop for storing data thai is serially available on miso
+  logic [7:0] dout_reg,dout_nxt; // flop for storing data to be serially transferred on mosi
+  logic iclk;
 
-  typedef enum logic [1:0] {idle = 2'd0,cpha_delay = 2'd1,deliver = 2'd2,capture = 2'd3} state;
+  parameter DBITS = 8; //total number of data bits to be communicated
+  
+  typedef enum logic [1:0] {idle = 2'd0,cpha_delay = 2'd1,drive = 2'd2,sample = 2'd3} state;
   state pr_state,nx_state;
 
   always @(posedge clk or negedge rst) begin
     if (!rst) begin
       dbits_cnt <= '0;
       data_in   <= '0;
-      tx_reg    <= '1;
-      tick_cnt  <= '0;
-      parity_reg<= '0;
+      dout_reg  <= '0;
+      cnt       <= '0;
     end
     else begin
       dbits_cnt <= dbits_cnt_nxt;
-      data_in   <= data_nxt;
-      tx_reg    <= tx_nxt;
-      tick_cnt  <= tick_cnt_nxt;
-      parity_reg<= parity_nxt;
+      data_in   <= din_nxt;
+      dout_reg  <= dout_nxt;
+      cnt       <= cnt_nxt;
     end
   end
   
@@ -46,71 +46,64 @@ module spi_m (dout,ready,sclk,mosi,done,miso,cpol,cpha,din,dvsr,start,clk,rst);
   always @(*) begin
       nx_state      = pr_state; //default values
       dbits_cnt_nxt = dbits_cnt;
-      data_nxt      = data_in;
-      tx_nxt        = tx_reg;
-      tick_cnt_nxt  = tick_cnt;
-      tx_done       = '0;
-      parity_nxt    = parity_reg;
-    
+      din_nxt       = data_in;
+      dout_nxt      = dout_reg;
+      cnt_nxt       = cnt;
+      done          = '0; // assert done at the end for one cycle
+      ready         = '0; // during data transfer ready=0
+          
     case (pr_state) 
-      idle    : begin // if tx_start send the start bit 0 in next cycle, store din and its parity
-                  if (tx_start == '1) begin
-                    nx_state   = start;
-                    data_nxt   = din;
-                    parity_nxt = ^din;
-                  end
-                end
-        
-      start   : begin // keep tx line low for 16 ticks, why 16? pls check source video
-                  tx_nxt = '0;
-                  if (tick=='1) begin
-                    if (tick_cnt ==  4'd15) begin
-                      nx_state = data;
-                      tick_cnt_nxt = '0;
-                    end
-                    else tick_cnt_nxt = tick_cnt + 4'd1;
-                  end
-                end
-        
-      data    : begin // transfer data bits each will be available at tx for 16 ticks
-                  tx_nxt = data_in[0];
-                  if (tick=='1) begin
-                    if (tick_cnt ==  4'd15) begin
-                      tick_cnt_nxt = '0;
-                      data_nxt     = data_in >> 1;
-                      if (dbits_cnt == DBITS - 1) nx_state = parity;
-                      else dbits_cnt_nxt = dbits_cnt + 2'd1;
-                    end
-                    else tick_cnt_nxt = tick_cnt + 4'd1;
-                  end
-                end
-        
-      parity  : begin // transfer stored parity bit on tx for 16 ticks
-                  tx_nxt = parity_reg;
-                  if (tick=='1) begin
-                    if (tick_cnt ==  4'd15) begin
-                      nx_state = stop;
-                      tick_cnt_nxt = '0;
-                    end
-                    else tick_cnt_nxt = tick_cnt + 4'd1;
-                  end
-                 end
+      idle      : begin //slave asserts ready by default, depending on cpha value either drive first bit, or delay one clk
+                     ready = '1;
+                     if (start == '1) begin
+                       nx_state   = (cpha) ? cpha_delay : drive;
+                       dout_nxt   = din;
+                     end
+                   end
       
-      stop    : begin // transfer stop bit '1 on tx for 16 ticks, at end generate tx_done for one cycle
-                  tx_nxt = '1;
-                  if (tick=='1) begin
-                    if (tick_cnt ==  4'd15) begin
-                      nx_state = idle;
-                      tick_cnt_nxt = '0;
-                      tx_done = '1;
-                    end
-                    else tick_cnt_nxt = tick_cnt + 4'd1;
-                  end
-                end
-    endcase
+      cpha_delay : begin // wait for next cycle, as if cpha = '1, driving should be at clk edge 
+                     if (cnt == dvsr) begin
+                       nx_state   =  drive;
+                       cnt_nxt    = '0;
+                     end
+                     else cnt_nxt = cnt + 16'd1;
+                   end
+      
+      drive      : begin // in next sclk cycle, capture miso input into data_in reg
+                     if (cnt==dvsr) begin
+                       din_nxt  = {data_in[6:0],miso};
+                       nx_state = sample;
+                       cnt_nxt = '0;
+                     end
+                     else cnt_nxt = cnt + 16'd1;
+                   end
+        
+      sample     : begin // in next sclk cycle, deliver mosi output from dout reg, repeat till all DBITS are sent/captured
+                     if (cnt ==  dvsr) begin
+                       if (dbits_cnt == DBITS - 1) begin
+                         nx_state = idle;
+                         cnt_nxt  = '0;
+                         done     = '1;
+                         dbits_cnt_nxt = '0;
+                       end
+                       else begin
+                         dbits_cnt_nxt = dbits_cnt + 3'd1;
+                         dout_nxt = {dout[6:0],1'b0};
+                         nx_state = drive;
+                         cnt_nxt  = '0;
+                       end 
+                     end
+                     else cnt_nxt = cnt + 16'd1;
+                   end
+     endcase
   end
   
-  assign tx = tx_reg;
+  //sclk generation
+  assign pclk = (nx_state==sample) || ();
+  assign sclk_nxt = (cpol) ? pclk : pclk;
+  
+  assign dout = (done) ? data_in : '0;
+  assign mosi = dout_reg[7];
   
 endmodule
  
