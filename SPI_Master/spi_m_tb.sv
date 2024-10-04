@@ -18,20 +18,22 @@ module spi_m_tb();
     
     clk      = '0;
     rst      = '0;
-    tx_start = '0;
-    tick     = '0;
+    start    = '0;
+    miso     = '0;
     din      = '0;
+    dvsr     = '0;
+    cpol     = '0;
+    cpha     = '0;
     
     #7 @(posedge clk) rst = '1;
 
-    #7 @(posedge clk) tx_start = '1; din = 3'd5;
-    #3 @(posedge clk) tx_start = '0;
-   
-    for (int i=0;i<100;i++) begin
-      #3 @(posedge clk) tick = '1;
-      #3 @(posedge clk) tick = '0;
-      #162;
-    end
+   #7 @(posedge clk) start = '1; din = 8'd100; dvsr = 16'd49; // for 100MHz system clk, and 1MHz sclk
+    #3 @(posedge clk) start = '0;
+
+   for (int i=0;i<1000;i++) begin
+      miso = $random%3;
+      #10;
+   end
    #10 $finish;
   end
   
