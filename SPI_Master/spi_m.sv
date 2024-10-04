@@ -58,7 +58,8 @@ module spi_m (dout,ready,sclk,mosi,done,miso,cpol,cpha,din,dvsr,start,clk,rst);
       idle      : begin //slave asserts ready by default, depending on cpha value either drive first bit, or delay one clk
                      ready = '1;
                      if (start == '1) begin
-                       nx_state   = (cpha) ? cpha_delay : drive;
+                       if (cpha) nx_state   =  cpha_delay;
+                       else nx_state   =  drive;
                        dout_nxt   = din;
                      end
                    end
@@ -90,7 +91,7 @@ module spi_m (dout,ready,sclk,mosi,done,miso,cpol,cpha,din,dvsr,start,clk,rst);
                        end
                        else begin
                          dbits_cnt_nxt = dbits_cnt + 3'd1;
-                         dout_nxt = {dout[6:0],1'b0};
+                         dout_nxt = {dout_reg[6:0],1'b0};
                          nx_state = drive;
                          cnt_nxt  = '0;
                        end 
