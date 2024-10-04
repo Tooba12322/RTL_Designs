@@ -3,9 +3,11 @@
 `timescale 1ns/1ps
 module spi_m_tb();
  
-  logic tx,tx_done; 
-  logic tick,tx_start,clk,rst;
-  logic [2:0] din;
+  logic done,ready,sclk,mosi;
+  logic [7:0] dout;
+  logic miso,cpol,cpha,start,clk,rst;
+  logic [7:0] din;
+  logic [15:0] dvsr;
   
   spi_m DUT(.*);
     
