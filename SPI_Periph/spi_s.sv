@@ -7,7 +7,7 @@ module spi_s (miso,dout,ready,sclk,mosi,done,din,cpha,cpol,rst);
   
   output logic done,miso;
   output logic [7:0] dout;
-  input logic mosi,clk,rst,cpha,cpol,sclk,ready;
+  input logic mosi,rst,cpha,cpol,sclk,ready;
   input logic [7:0] din;
  
   logic [2:0] dbits_cnt,dbits_cnt_nxt; //counter to calculate number of data bits transmitted
