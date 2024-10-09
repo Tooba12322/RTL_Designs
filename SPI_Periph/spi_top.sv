@@ -57,7 +57,7 @@ module spi_m (dout,ready,sclk,mosi,done,miso,cpol,cpha,din,dvsr,start,clk,rst);
       ready         = '0; // during data transfer ready=0
           
     case (pr_state) 
-      idle      : begin //slave asserts ready by default, depending on cpha value either drive first bit, or delay one clk
+      idle      : begin //master asserts ready by default, depending on cpha value either drive first bit, or delay one clk
                      ready = '1;
                      if (start == '1) begin
                        if (cpha) nx_state   =  cpha_delay;
@@ -114,17 +114,17 @@ module spi_m (dout,ready,sclk,mosi,done,miso,cpol,cpha,din,dvsr,start,clk,rst);
   
 endmodule
 
-module spi_s (miso,dout,ready,sclk,mosi,done,din,cpha,cpol,rst);
+module spi_s (miso,dout,ready,sclk,mosi,done,din,cpha,clk,rst);
   
   output logic done,miso;
   output logic [7:0] dout;
-  input logic mosi,rst,cpha,cpol,sclk,ready;
+  input logic mosi,rst,cpha,sclk,clk,ready;
   input logic [7:0] din;
  
   logic [2:0] dbits_cnt,dbits_cnt_nxt; //counter to calculate number of data bits transmitted
   logic [7:0] data_in, din_nxt; // flop for storing data that is serially available on mosi
   logic [7:0] dout_reg,dout_nxt; // flop for storing data to be serially transferred on miso
- 
+  logic done_nxt;
 
   parameter DBITS = 8; //total number of data bits to be communicated
   
@@ -135,15 +135,21 @@ module spi_s (miso,dout,ready,sclk,mosi,done,din,cpha,cpol,rst);
     if (!rst) begin
       dbits_cnt <= '0;
       data_in   <= '0;
-      dout_reg  <= '0;
+      dout_reg  <= '0; 
     end
     else begin
       dbits_cnt <= dbits_cnt_nxt;
       data_in   <= din_nxt;
       dout_reg  <= dout_nxt;
+      
     end
   end
   
+  always @(posedge sclk or negedge sclk or negedge rst) begin
+    if (!rst)  done      <= '0;
+    else done            <= done_nxt;
+  end
+      
   always @(posedge sclk or negedge sclk or negedge rst) begin
     if (!rst) pr_state <= idle;
     else pr_state <= nx_state;
@@ -154,37 +160,32 @@ module spi_s (miso,dout,ready,sclk,mosi,done,din,cpha,cpol,rst);
       dbits_cnt_nxt = dbits_cnt;
       din_nxt       = data_in;
       dout_nxt      = dout_reg;
-      done          = '0; // assert done at the end for one cycle
+      done_nxt      = '0; // assert done at the end for one cycle
           
     case (pr_state) 
       idle      : begin 
                    if (ready == '0) begin
-                     if (cpha) begin
-                        nx_state   =  cpha_delay; 
-                     end
-                     else begin
-                       if (!cpol) nx_state   =  drive;
-                       else      nx_state   =  sample;
-                     end
+                     if (cpha) nx_state   =  cpha_delay; 
+                     else      nx_state   =  drive;
                      dout_nxt   = din;
                    end
                  end
       
       cpha_delay : begin 
-                       if (!cpol) nx_state   =  drive;
-                       else      nx_state    =  sample;
+                     nx_state    =  drive;
                    end
       
       drive      : begin // in next sclk cycle, capture mosi input into data_in reg
                        din_nxt  = {data_in[6:0],mosi};
-                       nx_state = sample;
-                       done     = (dbits_cnt == DBITS - 1 && cpha=='1) ? '1 : '0;
+                       if (dbits_cnt == DBITS - 1 && cpha=='0) nx_state = idle;
+                       else nx_state = sample;
+                       done_nxt      = (dbits_cnt == DBITS - 1 && cpha=='0) ? '1 : '0;
                    end
         
       sample     : begin // in next sclk cycle, deliver miso output from dout reg, repeat till all DBITS are sent/captured
-                       if (dbits_cnt == DBITS - 1) begin
-                         nx_state = idle;
-                         done     = '1;
+                       if (dbits_cnt == DBITS - 2 && cpha=='1) begin
+                         nx_state      = idle;
+                         done_nxt      = '1;
                          dbits_cnt_nxt = '0;
                        end
                        else begin
@@ -192,6 +193,7 @@ module spi_s (miso,dout,ready,sclk,mosi,done,din,cpha,cpol,rst);
                          din_nxt  = (dbits_cnt == DBITS - 2 && cpha=='1) ? {data_in[6:0],mosi} : data_in;//sample last bit when cpha=1
                          dout_nxt = {dout_reg[6:0],1'b0};
                          nx_state = drive;
+                         
                        end
                    end
      endcase
@@ -218,7 +220,7 @@ module spi_top (dout_s,dout_m,done_s,done_m,cpol,cpha,din_s,din_m,dvsr,start,clk
   parameter DBITS = 8; //total number of data bits to be communicated
   
   spi_m master (.mosi(mosi_i),.rst(rst),.clk(clk),.dvsr(dvsr),.miso(miso_i),.done(done_m),.ready(ready_i),.sclk(sclk_i),.dout(dout_m),.cpol(cpol),.cpha(cpha),.start(start),.din(din_m));
-  spi_s slave (.miso(miso_i),.mosi(mosi_i),.done(done_s),.din(din_s),.rst(rst),.sclk(sclk_i),.dout(dout_s),.cpol(cpol),.cpha(cpha),.ready(ready_i));
+  spi_s slave (.miso(miso_i),.mosi(mosi_i),.done(done_s),.din(din_s),.rst(rst),.clk(clk),.sclk(sclk_i),.dout(dout_s),.cpha(cpha),.ready(ready_i));
  
   
 endmodule
