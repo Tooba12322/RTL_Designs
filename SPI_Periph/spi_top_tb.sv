@@ -1,10 +1,8 @@
 // Waveform : 
-//mode-0 (cpol=0,cpha=0) https://www.edaplayground.com/w/x/WCx
-//mode-1 (cpol=0,cpha=1) https://www.edaplayground.com/w/x/5tz
-//mode-2 (cpol=1,cpha=0) https://www.edaplayground.com/w/x/8yR
-//mode-3 (cpol=1,cpha=1) https://www.edaplayground.com/w/x/F8J
-
-https://www.edaplayground.com/w/x/DcW
+//mode-0 (cpol=0,cpha=0) https://www.edaplayground.com/w/x/SEp
+//mode-1 (cpol=0,cpha=1) https://www.edaplayground.com/w/x/VKF
+//mode-2 (cpol=1,cpha=0) 
+//mode-3 (cpol=1,cpha=1) 
 
 `timescale 1ns/1ps
 module spi_top_tb();
@@ -25,8 +23,8 @@ module spi_top_tb();
     rst      = '0;
     din_m    = '0;
     din_s    = '0;
-    cpol     = '0;
-    cpha     = '1;
+    cpol     = '1;
+    cpha     = '0;
     clk      = '0;
     start    = '0;
     dvsr     = '0;
@@ -34,7 +32,7 @@ module spi_top_tb();
     
     #7 @(posedge clk) rst = '1;
 
-    #7 @(posedge clk) start = '1; din_m = 8'hA1; din_s = 8'hA6; dvsr = 16'd49; // for 100MHz system clk, and 1MHz sclk
+    #7 @(posedge clk) start = '1; din_m = 8'h93; din_s = 8'h8A; dvsr = 16'd49; // for 100MHz system clk, and 1MHz sclk
     #3 @(posedge clk) start = '0;
 
    #12000 $finish;
