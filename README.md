@@ -48,6 +48,7 @@ Moderately difficult RTLs :
 16. Sequence Generator
 17. Single port RAM
 18. Memory interface
+19. Interface Design
 
 Complex RTL Designs :
 
@@ -58,6 +59,9 @@ Complex RTL Designs :
 5. APB master
 6. FIFO flush logic
 7. Debouncing circuit
+8. SPI protocol
+9. I2C protocol
+10. AHB master
 
 
 ========================================== TBD ================================================================
@@ -72,14 +76,9 @@ Complex RTL Designs :
 7. Floating-Point Multiplication: Implement a floating-point multiplier that supports IEEE 754 single-precision floating-point format.
 8. Configurable Logic Block (CLB): Create a configurable logic block with a flexible interconnect network that can be used to implement various combinational and sequential logic.
 9. Error Detection and Correction (ECC): Create an ECC module that detects and corrects single-bit errors in memory.
-10. AHB master interface
-11. AHB Slave interface
-12. AXI master interface
-13. AXI slave interface
-14. SPI interface
-15. JTAG interface
-16. Interface design
-
+10. AHB Slave interface
+11. AXI master interface
+12. AXI slave interface
 
 many more to come....
 
