@@ -178,6 +178,7 @@ module spi_s (miso,dout,ready,sclk,mosi,done,din,cpha,cpol,rst);
       drive      : begin // in next sclk cycle, capture mosi input into data_in reg
                        din_nxt  = {data_in[6:0],mosi};
                        nx_state = sample;
+                       done     = (dbits_cnt == DBITS - 1 && cpha=='1) ? '1 : '0;
                    end
         
       sample     : begin // in next sclk cycle, deliver miso output from dout reg, repeat till all DBITS are sent/captured
@@ -188,6 +189,7 @@ module spi_s (miso,dout,ready,sclk,mosi,done,din,cpha,cpol,rst);
                        end
                        else begin
                          dbits_cnt_nxt = dbits_cnt + 3'd1;
+                         din_nxt  = (dbits_cnt == DBITS - 2 && cpha=='1) ? {data_in[6:0],mosi} : data_in;//sample last bit when cpha=1
                          dout_nxt = {dout_reg[6:0],1'b0};
                          nx_state = drive;
                        end
