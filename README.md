@@ -28,6 +28,7 @@ Basic RTL implementations :
 26. Counter with load
 27. Adder subtractor
 28. 7-Seg to ASCII
+29. Interface Design
 
 Moderately difficult RTLs :
 
@@ -48,7 +49,6 @@ Moderately difficult RTLs :
 16. Sequence Generator
 17. Single port RAM
 18. Memory interface
-19. Interface Design
 
 Complex RTL Designs :
 
