@@ -21,6 +21,14 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store,din,dvsr,start,cmd,clk,rs
   parameter READ    = 3'd2;
   parameter STOP    = 3'd3;
   parameter RESTART = 3'd4;
+  
+  logic [8:0] tx_reg,tx_nxt;
+  logic [8:0] rx_reg,rx_nxt;
+  logic [15:0] cnt, cnt_nxt;
+  logic [2:0] cmd, cmd_nxt;
+  logic [15:0] qrtr, half;
+  logic sda_reg, sda_nxt, sclk_reg, sclk_nxt;
+  
 
   typedef enum logic [3:0] {idle, start1, start2, hold, data1, data2, data3, data4, 
                             data_end, stop1, stop2, restart} state;
@@ -28,20 +36,20 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store,din,dvsr,start,cmd,clk,rs
 
   always @(posedge clk or negedge rst) begin
     if (!rst) begin
-      dbits_cnt <= '0;
-      data_in   <= '0;
-      dout_reg  <= '0;
       cnt       <= '0;
-      sclk_reg  <= '0;
-      done      <= '0;
+      tx_reg    <= '0;
+      cmd       <= '0;
+      rx_reg    <= '0;
+      sda_reg   <= '1;
+      sclk_reg  <= '1;
     end
     else begin
-      dbits_cnt <= dbits_cnt_nxt;
-      data_in   <= din_nxt;
-      dout_reg  <= dout_nxt;
       cnt       <= cnt_nxt;
+      tx_reg    <= tx_nxt;
+      cmd       <= cmd_nxt;
+      rx_reg    <= rx_nxt;
+      sda_reg   <= sda_nxt;
       sclk_reg  <= sclk_nxt;
-      done      <= done_nxt;
     end
   end
   
@@ -52,15 +60,17 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store,din,dvsr,start,cmd,clk,rs
   
   always @(*) begin
       nx_state      = pr_state; //default values
-      dbits_cnt_nxt = dbits_cnt;
-      din_nxt       = data_in;
-      dout_nxt      = dout_reg;
       cnt_nxt       = cnt;
-      done_nxt      = '0; // assert done at the end for one cycle
+      cmd_nxt       = cmd;
+      tx_nxt        = tx_reg;
+      rx_nxt        = rx_reg;
+      sda_nxt       = sda_reg;
+      sclk_nxt      = sclk_reg;
+      cmd_done      = '0;
       ready         = '0; // during data transfer ready=0
           
     case (pr_state) 
-      idle      : begin //master asserts ready by default, depending on cpha value either drive first bit, or delay one clk
+      idle      : begin
                      ready = '1;
                      if (start == '1) begin
                        if (cpha) nx_state   =  cpha_delay;
