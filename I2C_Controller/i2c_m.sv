@@ -27,7 +27,10 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store,din,dvsr,start,cmd,clk,rs
   logic [15:0] cnt, cnt_nxt;
   logic [2:0] cmd, cmd_nxt;
   logic [15:0] qrtr, half;
-  logic sda_reg, sda_nxt, sclk_reg, sclk_nxt;
+  logic sda_reg, sda_nxt;
+  logic sclk_reg, sclk_nxt;
+  logic bit_reg, bit_nxt;
+  logic nack, data_phase;
   
 
   typedef enum logic [3:0] {idle, start1, start2, hold, data1, data2, data3, data4, 
@@ -40,6 +43,7 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store,din,dvsr,start,cmd,clk,rs
       tx_reg    <= '0;
       cmd       <= '0;
       rx_reg    <= '0;
+      bit_reg   <= '0;
       sda_reg   <= '1;
       sclk_reg  <= '1;
     end
@@ -47,6 +51,7 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store,din,dvsr,start,cmd,clk,rs
       cnt       <= cnt_nxt;
       tx_reg    <= tx_nxt;
       cmd       <= cmd_nxt;
+      bit_reg   <= bit_nxt;
       rx_reg    <= rx_nxt;
       sda_reg   <= sda_nxt;
       sclk_reg  <= sclk_nxt;
@@ -60,12 +65,14 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store,din,dvsr,start,cmd,clk,rs
   
   always @(*) begin
       nx_state      = pr_state; //default values
-      cnt_nxt       = cnt;
+      cnt_nxt       = cnt+1;
       cmd_nxt       = cmd;
       tx_nxt        = tx_reg;
       rx_nxt        = rx_reg;
-      sda_nxt       = sda_reg;
-      sclk_nxt      = sclk_reg;
+      bit_nxt       = bit_reg;
+      sda_nxt       = '1;
+      sclk_nxt      = '1;
+      data_phase    = '0;
       cmd_done      = '0;
       ready         = '0; // during data transfer ready=0
           
@@ -118,11 +125,13 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store,din,dvsr,start,cmd,clk,rs
   end
   
   //sclk generation
-  assign iclk = (nx_state==sample && !cpha) || (nx_state==drive && cpha);
-  assign sclk_nxt = (cpol) ? !iclk : iclk;
   
-  assign dout = (done) ? data_in : '0; // drive input reg contents at the end, should equal to 8 miso bits received serially
-  assign mosi = dout_reg[7]; // drive mosi output pin
-  assign sclk = sclk_reg; // drive sclk output
+  assign sclk = (sclk_reg) ? 1'bz : 1'b0;
+  
+  assign qrtr = dvsr;
+  assign half = qrtr<<1;
+  assign rd_dout = rx_reg[8:1]; // drive read reg contents at the end, should equal to 8-bits received serially
+  assign ack     = tx_reg[0];
+  assign nack    = din[0];
   
 endmodule
