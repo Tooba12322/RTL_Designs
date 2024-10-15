@@ -30,17 +30,20 @@ module i2c_m_tb();
     
     #7 @(posedge clk) rst = '1;
     wait(ready);
-    #7 @(posedge clk) store_cmd = '1; din = 8'h93; dvsr = 16'd25; // for 100MHz system clk, and 1MHz sclk,dvsr should be 250, reducing due to simulation time
+    #7 @(posedge clk) store_cmd = '1; din = 8'h92; dvsr = 16'd25; // for 100MHz system clk, and 1MHz sclk,dvsr should be 250, reducing due to simulation time
     #3 @(posedge clk) store_cmd = '0;
     
     wait(cmd_done);
     @(posedge clk) store_cmd = '1; cmd = 3'd1;
     
-     wait(cmd_done);
-     @(posedge clk) store_cmd = '1; cmd = 3'd3;
+    wait(cmd_done);
+    @(posedge clk) store_cmd = '1; cmd = 3'd4;
     
-     wait(cmd_done);
-     @(posedge clk) store_cmd = '1; cmd = 3'd4;
+    wait(cmd_done);
+    @(posedge clk) store_cmd = '1; cmd = 3'd2;
+    
+    wait(cmd_done);
+     @(posedge clk) store_cmd = '1; cmd = 3'd3;
 
    #12000 $finish;
   end
