@@ -5,13 +5,13 @@
 
 `timescale 1ns/1ps
 
-module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,start,cmd,clk,rst);
+module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,cmd,clk,rst);
   
   output logic ready,cmd_done,ack;
   output logic [7:0] rd_out;
   inout tri sda;
   output tri sclk;
-  input logic store_cmd,start,clk,rst;
+  input logic store_cmd,clk,rst;
   input logic [2:0] cmd;
   input logic [7:0] din;
   input logic [15:0] dvsr; // divisor for sclk generation counter
@@ -164,9 +164,9 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,start,cmd,cl
                         bit_cnt_nxt ='0;
                       end
                       else begin
-                        nx_state    =  data_1;
+                        nx_state    =  data1;
                         bit_cnt_nxt = bit_cnt + 4'd1;
-                        tx_next     = {tx_reg[7:0],nack};
+                        tx_nxt     = {tx_reg[7:0],nack};
                       end
                     end
                   end
@@ -209,14 +209,15 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,start,cmd,cl
   end
   
   //sclk generation
-  assign sclk = (sclk_reg) ? 1'bz : 1'b0;
-
+  assign sclk = (sclk_reg) ? 1'b1 : 1'b0;
+  
+  //sda generation
   assign receive = (data_phase && bit_cnt<8 && cmd_reg==READ) || (data_phase && bit_cnt==8 && cmd_reg==WRITE);
-  assign sda     = (receive || sda_reg) ? 1'bz : 1'b0;
+  assign sda     = (receive || sda_reg) ? 1'b1 : 1'b0;
   
   assign qrtr = dvsr; // input divisor value, based on sclk and system clk requirements, check formula from source video
   assign half = qrtr<<1; // 2*qrtr
-  assign rd_dout = rx_reg[8:1]; // drive read reg contents at the end, should equal to 8-bits received serially
+  assign rd_out = rx_reg[8:1]; // drive read reg contents at the end, should equal to 8-bits received serially
   assign ack     = rx_reg[0]; // ack is the acknowledge received upon write
   assign nack    = tx_reg[0]; // nack is the acknowledge to be sent upon read completion
   
