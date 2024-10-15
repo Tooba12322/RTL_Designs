@@ -5,13 +5,13 @@
 
 `timescale 1ns/1ps
 
-module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store,din,dvsr,start,cmd,clk,rst);
+module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,start,cmd,clk,rst);
   
   output logic ready,cmd_done,ack;
   output logic [7:0] rd_out;
   inout tri sda;
   output tri sclk;
-  input logic store,start,clk,rst;
+  input logic store_cmd,start,clk,rst;
   input logic [2:0] cmd;
   input logic [7:0] din;
   input logic [15:0] dvsr;
@@ -25,11 +25,11 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store,din,dvsr,start,cmd,clk,rs
   logic [8:0] tx_reg,tx_nxt;
   logic [8:0] rx_reg,rx_nxt;
   logic [15:0] cnt, cnt_nxt;
-  logic [2:0] cmd, cmd_nxt;
+  logic [2:0] cmd_reg, cmd_nxt;
   logic [15:0] qrtr, half;
   logic sda_reg, sda_nxt;
   logic sclk_reg, sclk_nxt;
-  logic bit_reg, bit_nxt;
+  logic [3:0] bit_cnt, bit_cnt_nxt;
   logic nack, data_phase;
   
 
@@ -41,17 +41,17 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store,din,dvsr,start,cmd,clk,rs
     if (!rst) begin
       cnt       <= '0;
       tx_reg    <= '0;
-      cmd       <= '0;
+      cmd_reg   <= '0;
       rx_reg    <= '0;
-      bit_reg   <= '0;
+      bit_cnt   <= '0;
       sda_reg   <= '1;
       sclk_reg  <= '1;
     end
     else begin
       cnt       <= cnt_nxt;
       tx_reg    <= tx_nxt;
-      cmd       <= cmd_nxt;
-      bit_reg   <= bit_nxt;
+      cmd_reg   <= cmd_nxt;
+      bit_cnt   <= bit_cnt_nxt;
       rx_reg    <= rx_nxt;
       sda_reg   <= sda_nxt;
       sclk_reg  <= sclk_nxt;
@@ -66,10 +66,10 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store,din,dvsr,start,cmd,clk,rs
   always @(*) begin
       nx_state      = pr_state; //default values
       cnt_nxt       = cnt+1;
-      cmd_nxt       = cmd;
+      cmd_nxt       = cmd_reg;
       tx_nxt        = tx_reg;
       rx_nxt        = rx_reg;
-      bit_nxt       = bit_reg;
+      bit_cnt_nxt   = bit_cnt;
       sda_nxt       = '1;
       sclk_nxt      = '1;
       data_phase    = '0;
@@ -78,49 +78,124 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store,din,dvsr,start,cmd,clk,rs
           
     case (pr_state) 
       idle      : begin
-                     ready = '1;
-                     if (start == '1) begin
-                       if (cpha) nx_state   =  cpha_delay;
-                       else nx_state   =  drive;
-                       dout_nxt   = din;
-                     end
-                   end
+                    ready = '1;
+                    if (store_cmd == '1 && cmd==START) begin
+                      nx_state   =  start1;
+                      cnt_nxt    =  '0;
+                      cmd_nxt    =  cmd;
+                    end
+                  end
       
-      cpha_delay : begin // wait for next cycle, as if cpha = '1, driving should be at clk edge 
-                     if (cnt == dvsr) begin
-                       nx_state   =  drive;
+      start1    : begin 
+                    sda_nxt = '0;
+                    if (cnt == half) begin
+                       nx_state   =  start2;
                        cnt_nxt    = '0;
-                     end
-                     else cnt_nxt = cnt + 16'd1;
-                   end
+                    end
+                  end
       
-      drive      : begin // in next sclk cycle, capture miso input into data_in reg
-                     if (cnt==dvsr) begin
-                       din_nxt  = {data_in[6:0],miso};
-                       nx_state = sample;
-                       cnt_nxt = '0;
-                     end
-                     else cnt_nxt = cnt + 16'd1;
-                   end
+      start2    : begin 
+                    sda_nxt  = '0;
+                    sclk_nxt = '0;
+                    if (cnt==half) begin
+                      cmd_done  = '1;
+                      nx_state  = hold;
+                      cnt_nxt = '0;
+                    end
+                  end
         
-      sample     : begin // in next sclk cycle, deliver mosi output from dout reg, repeat till all DBITS are sent/captured
-                     if (cnt ==  dvsr) begin
-                       if (dbits_cnt == DBITS - 1) begin
-                         nx_state = idle;
-                         cnt_nxt  = '0;
-                         done_nxt = '1;
-                         dbits_cnt_nxt = '0;
-                         din_nxt  = {data_in[6:0],miso};// for last bit to be captured
-                       end
-                       else begin
-                         dbits_cnt_nxt = dbits_cnt + 3'd1;
-                         dout_nxt = {dout_reg[6:0],1'b0};
-                         nx_state = drive;
-                         cnt_nxt  = '0;
-                       end 
-                     end
-                     else cnt_nxt = cnt + 16'd1;
-                   end
+      hold      : begin
+                    ready = '1;
+                    sda_nxt  = '0;
+                    sclk_nxt = '0;
+                    if (store_cmd == '1) begin
+                      cmd_nxt  = cmd;
+                      cnt_nxt  = '0;
+                      case (cmd)
+                        STOP           : nx_state  = stop1;
+                        RESTART, START : nx_state  = start1;
+                        default        : begin
+                                           nx_state    = data1;
+                                           bit_cnt_nxt = '0;
+                                           tx_nxt      = {din,nack};
+                                         end
+                      endcase
+                    end
+                  end
+      
+       data1    : begin
+                    sda_nxt    = tx_reg[8];
+                    sclk_nxt   = '0;
+                    data_phase = '1;
+                    if (cnt == qrtr) begin
+                       nx_state   =  data2;
+                       cnt_nxt    = '0;
+                    end
+                  end
+      
+       data2    : begin
+                    sda_nxt    = tx_reg[8];
+                    data_phase = '1;
+                    if (cnt == qrtr) begin
+                       nx_state   =  data3;
+                       cnt_nxt    = '0;
+                       rx_nxt     = {rx_reg[7:0],sda};
+                    end
+                  end
+      
+       data3    : begin
+                    sda_nxt    = tx_reg[8];
+                    data_phase = '1;
+                    if (cnt == qrtr) begin
+                       nx_state   =  data4;
+                       cnt_nxt    = '0;
+                    end
+                  end
+      
+       data4    : begin
+                    sda_nxt    = tx_reg[8];
+                    sclk_nxt   = '0;
+                    data_phase = '1;
+                    if (cnt == qrtr) begin
+                       nx_state   =  data_end;
+                       cnt_nxt    = '0;
+                    end
+                  end
+      
+       data_end : begin
+                    sda_nxt    = '0;
+                    sclk_nxt   = '0;
+                    if (cnt == qrtr) begin
+                       nx_state   =  hold;
+                       cnt_nxt    = '0;
+                       cmd_done   = '1;
+                    end
+                  end
+      
+       stop1    : begin 
+                    sda_nxt = '0;
+                    if (cnt == half) begin
+                       nx_state   =  stop2;
+                       cnt_nxt    = '0;
+                    end
+                  end
+      
+       stop2    : begin 
+                    sda_nxt  = '1;
+                    if (cnt==half) begin
+                      cmd_done  = '1;
+                      nx_state  = idle;
+                      cnt_nxt = '0;
+                    end
+                  end
+             
+       restart  : begin 
+                   if (cnt==half) begin
+                      cmd_done  = '1;
+                      nx_state  = start1;
+                      cnt_nxt = '0;
+                    end
+                  end
      endcase
   end
   
@@ -131,7 +206,7 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store,din,dvsr,start,cmd,clk,rs
   assign qrtr = dvsr;
   assign half = qrtr<<1;
   assign rd_dout = rx_reg[8:1]; // drive read reg contents at the end, should equal to 8-bits received serially
-  assign ack     = tx_reg[0];
-  assign nack    = din[0];
+  assign ack     = rx_reg[0];
+  assign nack    = tx_reg[0];
   
 endmodule
