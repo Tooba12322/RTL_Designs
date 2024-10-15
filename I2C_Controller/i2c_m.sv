@@ -14,23 +14,24 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,start,cmd,cl
   input logic store_cmd,start,clk,rst;
   input logic [2:0] cmd;
   input logic [7:0] din;
-  input logic [15:0] dvsr;
-  
+  input logic [15:0] dvsr; // divisor for sclk generation counter
+
+  // Commands 
   parameter START   = 3'd0;
   parameter WRITE   = 3'd1;
   parameter READ    = 3'd2;
   parameter STOP    = 3'd3;
   parameter RESTART = 3'd4;
   
-  logic [8:0] tx_reg,tx_nxt;
-  logic [8:0] rx_reg,rx_nxt;
-  logic [15:0] cnt, cnt_nxt;
-  logic [2:0] cmd_reg, cmd_nxt;
-  logic [15:0] qrtr, half;
-  logic sda_reg, sda_nxt;
-  logic sclk_reg, sclk_nxt;
-  logic [3:0] bit_cnt, bit_cnt_nxt;
-  logic nack, data_phase;
+  logic [8:0] tx_reg,tx_nxt; // output reg
+  logic [8:0] rx_reg,rx_nxt; // input reg
+  logic [15:0] cnt, cnt_nxt; // tick counter
+  logic [2:0] cmd_reg, cmd_nxt; // command reg
+  logic [15:0] qrtr, half; // tick generation thresholds
+  logic sda_reg, sda_nxt; // sda output reg
+  logic sclk_reg, sclk_nxt; // sclk output reg
+  logic [3:0] bit_cnt, bit_cnt_nxt; // counter for counting total bit sent/recived
+  logic nack, data_phase, receive; // not ack, data transfer, data reception
   
 
   typedef enum logic [3:0] {idle, start1, start2, hold, data1, data2, data3, data4, 
@@ -70,14 +71,14 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,start,cmd,cl
       tx_nxt        = tx_reg;
       rx_nxt        = rx_reg;
       bit_cnt_nxt   = bit_cnt;
-      sda_nxt       = '1;
+      sda_nxt       = '1; // by default sda and sclk are pulled high
       sclk_nxt      = '1;
       data_phase    = '0;
       cmd_done      = '0;
       ready         = '0; // during data transfer ready=0
           
     case (pr_state) 
-      idle      : begin
+      idle      : begin // assert ready to slave, check for start command
                     ready = '1;
                     if (store_cmd == '1 && cmd==START) begin
                       nx_state   =  start1;
@@ -86,7 +87,7 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,start,cmd,cl
                     end
                   end
       
-      start1    : begin 
+      start1    : begin // drive sda=0, wait for cnt = 2*dvsr, why? please check source video
                     sda_nxt = '0;
                     if (cnt == half) begin
                        nx_state   =  start2;
@@ -94,7 +95,7 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,start,cmd,cl
                     end
                   end
       
-      start2    : begin 
+      start2    : begin // drive sda=0,sclk=0 wait for cnt = 2*dvsr, why? please check source video, assert start cmd done
                     sda_nxt  = '0;
                     sclk_nxt = '0;
                     if (cnt==half) begin
@@ -104,7 +105,7 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,start,cmd,cl
                     end
                   end
         
-      hold      : begin
+      hold      : begin // drive sda=0, sclk=0,check for next command, if WR/RD store din in tx_reg 
                     ready = '1;
                     sda_nxt  = '0;
                     sclk_nxt = '0;
@@ -123,7 +124,7 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,start,cmd,cl
                     end
                   end
       
-       data1    : begin
+       data1    : begin // drive first data MSB bit of din stored in tx_reg, wait for cnt= dvsr
                     sda_nxt    = tx_reg[8];
                     sclk_nxt   = '0;
                     data_phase = '1;
@@ -133,7 +134,7 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,start,cmd,cl
                     end
                   end
       
-       data2    : begin
+       data2    : begin  // drive first data MSB bit of din stored in tx_reg, wait for cnt= dvsr
                     sda_nxt    = tx_reg[8];
                     data_phase = '1;
                     if (cnt == qrtr) begin
@@ -143,7 +144,7 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,start,cmd,cl
                     end
                   end
       
-       data3    : begin
+       data3    : begin  // drive first data MSB bit of din stored in tx_reg, wait for cnt= dvsr
                     sda_nxt    = tx_reg[8];
                     data_phase = '1;
                     if (cnt == qrtr) begin
@@ -152,13 +153,21 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,start,cmd,cl
                     end
                   end
       
-       data4    : begin
+      data4    : begin  // drive first data MSB bit of din stored in tx_reg, wait for cnt= dvsr, check for bit count
                     sda_nxt    = tx_reg[8];
                     sclk_nxt   = '0;
                     data_phase = '1;
                     if (cnt == qrtr) begin
-                       nx_state   =  data_end;
-                       cnt_nxt    = '0;
+                      cnt_nxt    = '0;
+                      if (bit_cnt==4'd8) begin
+                        nx_state    =  data_end;
+                        bit_cnt_nxt ='0;
+                      end
+                      else begin
+                        nx_state    =  data_1;
+                        bit_cnt_nxt = bit_cnt + 4'd1;
+                        tx_next     = {tx_reg[7:0],nack};
+                      end
                     end
                   end
       
@@ -172,7 +181,7 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,start,cmd,cl
                     end
                   end
       
-       stop1    : begin 
+       stop1    : begin // drive sda=0, wait for cnt = 2*dvsr, why? please check source video
                     sda_nxt = '0;
                     if (cnt == half) begin
                        nx_state   =  stop2;
@@ -180,7 +189,7 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,start,cmd,cl
                     end
                   end
       
-       stop2    : begin 
+       stop2    : begin // drive sda=1, wait for cnt = 2*dvsr, why? please check source video, assert stop cmd done
                     sda_nxt  = '1;
                     if (cnt==half) begin
                       cmd_done  = '1;
@@ -189,7 +198,7 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,start,cmd,cl
                     end
                   end
              
-       restart  : begin 
+       restart  : begin //  wait for cnt = 2*dvsr, why? please check source video, assert restart cmd done
                    if (cnt==half) begin
                       cmd_done  = '1;
                       nx_state  = start1;
@@ -200,13 +209,15 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,start,cmd,cl
   end
   
   //sclk generation
-  
   assign sclk = (sclk_reg) ? 1'bz : 1'b0;
+
+  assign receive = (data_phase && bit_cnt<8 && cmd_reg==READ) || (data_phase && bit_cnt==8 && cmd_reg==WRITE);
+  assign sda     = (receive || sda_reg) ? 1'bz : 1'b0;
   
-  assign qrtr = dvsr;
-  assign half = qrtr<<1;
+  assign qrtr = dvsr; // input divisor value, based on sclk and system clk requirements, check formula from source video
+  assign half = qrtr<<1; // 2*qrtr
   assign rd_dout = rx_reg[8:1]; // drive read reg contents at the end, should equal to 8-bits received serially
-  assign ack     = rx_reg[0];
-  assign nack    = tx_reg[0];
+  assign ack     = rx_reg[0]; // ack is the acknowledge received upon write
+  assign nack    = tx_reg[0]; // nack is the acknowledge to be sent upon read completion
   
 endmodule
