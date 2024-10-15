@@ -5,13 +5,13 @@
 
 `timescale 1ns/1ps
 
-module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,cmd,clk,rst);
+module i2c_m (nack,rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,cmd,clk,rst);
   
-  output logic ready,cmd_done,ack;
+  output logic ready,cmd_done,nack;
   output logic [7:0] rd_out;
   inout tri sda;
   output tri sclk;
-  input logic store_cmd,clk,rst;
+  input logic store_cmd,clk,rst,ack;
   input logic [2:0] cmd;
   input logic [7:0] din;
   input logic [15:0] dvsr; // divisor for sclk generation counter
@@ -31,7 +31,7 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,cmd,clk,rst)
   logic sda_reg, sda_nxt; // sda output reg
   logic sclk_reg, sclk_nxt; // sclk output reg
   logic [3:0] bit_cnt, bit_cnt_nxt; // counter for counting total bit sent/recived
-  logic nack, data_phase, receive; // not ack, data transfer, data reception
+  logic data_phase, receive; // not ack, data transfer, data reception
   
 
   typedef enum logic [3:0] {idle, start1, start2, hold, data1, data2, data3, data4, 
@@ -113,8 +113,9 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,cmd,clk,rst)
                       cmd_nxt  = cmd;
                       cnt_nxt  = '0;
                       case (cmd)
-                        STOP           : nx_state  = stop1;
-                        RESTART, START : nx_state  = start1;
+                        STOP    : nx_state  = stop1;
+                        START   : nx_state  = start1;
+                        RESTART : nx_state  = restart;
                         default        : begin
                                            nx_state    = data1;
                                            bit_cnt_nxt = '0;
@@ -162,6 +163,7 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,cmd,clk,rst)
                       if (bit_cnt==4'd8) begin
                         nx_state    =  data_end;
                         bit_cnt_nxt ='0;
+                        cmd_done   = '1;
                       end
                       else begin
                         nx_state    =  data1;
@@ -177,7 +179,7 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,cmd,clk,rst)
                     if (cnt == qrtr) begin
                        nx_state   =  hold;
                        cnt_nxt    = '0;
-                       cmd_done   = '1;
+                       
                     end
                   end
       
@@ -218,7 +220,7 @@ module i2c_m (rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,cmd,clk,rst)
   assign qrtr = dvsr; // input divisor value, based on sclk and system clk requirements, check formula from source video
   assign half = qrtr<<1; // 2*qrtr
   assign rd_out = rx_reg[8:1]; // drive read reg contents at the end, should equal to 8-bits received serially
-  assign ack     = rx_reg[0]; // ack is the acknowledge received upon write
-  assign nack    = tx_reg[0]; // nack is the acknowledge to be sent upon read completion
+  
+  assign nack    = cmd_reg==READ && !receive; // nack is the acknowledge to be sent upon read completion
   
 endmodule
