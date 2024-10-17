@@ -4,7 +4,7 @@
 `timescale 1ns/1ps
 module i2c_m_tb();
  
-  logic ready,cmd_done,ack;
+  logic ready,cmd_done,ack,nack;
   logic [7:0] rd_out;
   tri sda;
   tri sclk;
@@ -26,7 +26,7 @@ module i2c_m_tb();
     din      = '0;
     cmd      = '0;
     dvsr     = '0;
-    
+    ack      = '0;
     
     #7 @(posedge clk) rst = '1;
     wait(ready);
@@ -37,10 +37,10 @@ module i2c_m_tb();
     @(posedge clk) store_cmd = '1; cmd = 3'd1;
     
     wait(cmd_done);
-    @(posedge clk) store_cmd = '1; cmd = 3'd4;
+    @(posedge clk) store_cmd = '1; cmd = 3'd4; ack = '1;
     
     wait(cmd_done);
-    @(posedge clk) store_cmd = '1; cmd = 3'd2;
+    @(posedge clk) store_cmd = '1; cmd = 3'd2; ack = '0;
     
     wait(cmd_done);
      @(posedge clk) store_cmd = '1; cmd = 3'd3;
