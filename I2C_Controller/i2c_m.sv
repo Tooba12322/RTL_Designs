@@ -163,7 +163,7 @@ module i2c_m (nack,rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,cmd,clk
                       if (bit_cnt==4'd8) begin
                         nx_state    =  data_end;
                         bit_cnt_nxt ='0;
-                        cmd_done   = '1;
+                        
                       end
                       else begin
                         nx_state    =  data1;
@@ -179,7 +179,7 @@ module i2c_m (nack,rd_out,ready,sclk,cmd_done,ack,sda,store_cmd,din,dvsr,cmd,clk
                     if (cnt == qrtr) begin
                        nx_state   =  hold;
                        cnt_nxt    = '0;
-                       
+                       cmd_done   = '1;
                     end
                   end
       
