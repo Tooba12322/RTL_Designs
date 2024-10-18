@@ -17,24 +17,30 @@ module DB_tb ();
     sw = '0;
     #9 rst = '1;
     #100 sw = '1;
-    for (int i='0;i<12;i++) begin
+    for (int i='0;i<12;i++) begin // creating toggles to replicate machanical push button bounce
       sw = !sw;
       #10;
     end
+    
     sw = '1;
+    
     #3000 sw='0;
-    for (int i='0;i<9;i++) begin
+    for (int i='0;i<9;i++) begin // creating toggles to replicate machanical push button bounce
       sw = !sw;
       #6;
     end
+    
     sw = '0;
+    
     #4000 sw='1;
-    for (int i='0;i<6;i++) begin
+    for (int i='0;i<6;i++) begin // creating toggles to replicate machanical push button bounce
       sw = !sw;
       #13;
     end
     sw = '1;
+    
     #4000 sw='0;
+    
     #550 $finish;
   end
     
