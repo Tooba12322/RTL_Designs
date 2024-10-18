@@ -1,5 +1,5 @@
 
-// Waveform : 
+// Waveform : https://www.edaplayground.com/w/x/9eC
 
 `timescale 1ns/1ps
 module i2c_m_tb();
