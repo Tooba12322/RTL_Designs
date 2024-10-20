@@ -29,6 +29,7 @@ Basic RTL implementations :
 27. Adder subtractor
 28. 7-Seg to ASCII
 29. Interface Design
+30. UART Baud rate generator
 
 Moderately difficult RTLs :
 
@@ -55,16 +56,18 @@ Complex RTL Designs :
 1. Asynchronous FIFO
 2. MIPS32 processor design
 3. APB slave with memory interface
-4. UART system
-5. APB master
-6. FIFO flush logic
-7. Debouncing circuit
-8. SPI protocol
-9. I2C protocol
-10. AHB master
+4. UART transmitter
+5. UART receiver
+6. APB master
+7. FIFO flush logic
+8. Debouncing circuit
+9. SPI master
+10. SPI slave
+11. I2C master controller
+12. AHB master
 
 
-========================================== TBD ================================================================
+================================================================== TBD ==================================================================
 
 
 1. Clock Divider: Create a clock divider that generates a slower clock signal from a given input clock., divide by 3 clk
