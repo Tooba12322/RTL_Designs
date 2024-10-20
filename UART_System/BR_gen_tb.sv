@@ -1,4 +1,5 @@
-// Waveform : 
+// Waveform : https://www.edaplayground.com/w/x/Nbn
+
 `timescale 1ns/1ps
 module BR_gen_tb();
  
@@ -17,7 +18,7 @@ module BR_gen_tb();
     rst = '0;
     
     #7 @(posedge clk) rst = '1;
-    br_div = 11'd650;
+    br_div = 11'd650; // Baud rate generator generates a pulse after every 650 counts, refer waveform
     #100000 $finish;
   end
   
