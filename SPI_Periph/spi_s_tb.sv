@@ -1,8 +1,8 @@
 // Waveform : 
-//mode-0 (cpol=0,cpha=0) 
-//mode-1 (cpol=0,cpha=1) 
-//mode-2 (cpol=1,cpha=0) 
-//mode-3 (cpol=1,cpha=1) 
+//mode-0 (cpol=0,cpha=0) https://www.edaplayground.com/w/x/Cid
+//mode-1 (cpol=0,cpha=1) https://www.edaplayground.com/w/x/Fp5
+//mode-2 (cpol=1,cpha=0) https://www.edaplayground.com/w/x/JtW
+//mode-3 (cpol=1,cpha=1) https://www.edaplayground.com/w/x/RgE
 
 `timescale 1ns/1ps
 module spi_s_tb();
@@ -22,8 +22,8 @@ module spi_s_tb();
     rst      = '0;
     mosi     = '0;
     din      = '0;
-    cpol     = '0;
-    cpha     = '0;
+    cpol     = '1;
+    cpha     = '1;
     ready    = '1;
     sclk     = '0;
     
