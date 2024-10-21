@@ -2,20 +2,25 @@
 // Design and verify a AHB slave interface which utilises the memory interface.
 
 module ahb_s(
-  input         logic        clk,
-  input         logic        rst,
-  input         logic        psel_i,
-  input         logic        penable_i,
-  input         logic [3:0]  paddr_i,
-  input         logic        pwrite_i,
-  input         logic [31:0] pwdata_i,
-  output        logic [31:0] prdata_o,
-  output        logic        pready_o
+  input logic clk,
+  input logic rst,
+  input logic hwrite,
+  input logic [31:0] hwdata, 
+  input logic [31:0] haddr,
+  input logic [2:0] hsize, hburst,
+  input logic [1:0] htrans,
+  input logic [3:0] hprot,
+  input logic hmastlock,
+  output logic [31:0] hrdata,
+  output logic hready, hresp
 );
-  logic nwr;
-  assign nwr = !pwrite_i;
-  MEM mem(.clk(clk),.rst(rst),.req_i(psel_i),.req_rnw_i(nwr),.req_addr_i(paddr_i),
-          .req_wdata_i(pwdata_i),.req_ready_o(pready_o),.req_rdata_o(prdata_o)); 
+  logic nwr, req, receive;
+  assign nwr = !hwrite;
+  assign req = (htrans==2'd2) ? '1 : '0;
+  assign receive = (heady && hresp) ? '1 : '0;
+  
+  MEM mem(.clk(clk),.rst(rst),.req_i(req),.req_rnw_i(nwr),.req_addr_i(haddr),
+          .req_wdata_i(hwdata),.req_ready_o(receive),.req_rdata_o(hrdata)); 
 endmodule
 
 // A memory interface
