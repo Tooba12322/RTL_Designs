@@ -65,6 +65,8 @@ Complex RTL Designs :
 10. SPI slave
 11. I2C master controller
 12. AHB master
+13. AHB Slave
+14. log2 function
 
 
 ================================================================== TBD ==================================================================
@@ -79,9 +81,17 @@ Complex RTL Designs :
 7. Floating-Point Multiplication: Implement a floating-point multiplier that supports IEEE 754 single-precision floating-point format.
 8. Configurable Logic Block (CLB): Create a configurable logic block with a flexible interconnect network that can be used to implement various combinational and sequential logic.
 9. Error Detection and Correction (ECC): Create an ECC module that detects and corrects single-bit errors in memory.
-10. AHB Slave interface
-11. AXI master interface
-12. AXI slave interface
+10. AXI master interface
+11. AXI slave interface
+12. Divider:Create a synchronous divider that divides two N-bit numbers and outputs the quotient and remainder.
+13. Square Root Calculator: Design a circuit that computes the integer square root of an N-bit input.
+14. Matrix Multiplier: Implement a circuit that multiplies two square matrices of size N x N.
+15. Digital Signal Processing (DSP) Filters: Implement a finite impulse response (FIR) filter that processes an input signal and outputs the filtered signal.
+16. Polynomial Evaluator: Design a circuit that evaluates a polynomial of degree N for a given input value.
+17. Sigmoid function
+18. Tanh function
+19. Softmax function
+
 
 many more to come....
 
