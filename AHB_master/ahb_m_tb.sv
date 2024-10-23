@@ -28,12 +28,17 @@ module ahb_m_tb ();
     #5;
     @(posedge clk) DUT.in.req = '1;
      // DUT.in.byte_cnt = $urandom_range(16'd30,16'd550);
-    DUT.in.byte_cnt = 16'd1024;
+    DUT.in.byte_cnt = 16'd384;
     DUT.in.wr       = '1;
     DUT.in.start_addr = $urandom_range(32'd10,32'd100);
     
     wait(DUT.in.req_ack);
-    #3 @(posedge clk) DUT.in.req = '0; 
+    #3;
+    @(posedge clk) DUT.in.req = '1;
+     // DUT.in.byte_cnt = $urandom_range(16'd30,16'd550);
+    DUT.in.byte_cnt = 16'd512;
+    DUT.in.wr       = '0;
+    DUT.in.start_addr = $urandom_range(32'd10,32'd100);
     
     #1000 $finish;
   end
