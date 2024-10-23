@@ -6,10 +6,10 @@ interface cmd_if #(parameter ADDRW = 32, parameter BYTE_CNTw = 16, parameter DAT
   logic [BYTE_CNTw-1:0] byte_cnt;
   logic [ADDRW-1:0] start_addr;
   logic [DATAW-1:0] wdata;
-  logic done,wr_done,req_ack;
+  logic cmd_done,wr_done,req_ack;
   
-  modport master (input done,wr_done,req_ack, output req,byte_cnt,start_addr,wr,wdata);
-  modport slave (input req,byte_cnt,start_addr,wr,wdata, output done,req_ack,wr_done);
+  modport master (input cmd_done,wr_done,req_ack, output req,byte_cnt,start_addr,wr,wdata);
+  modport slave (input req,byte_cnt,start_addr,wr,wdata, output cmd_done,req_ack,wr_done);
   
 endinterface
 
@@ -59,20 +59,22 @@ module ahb_m(clk, rst);
   
   
   //Driving master output from flops
-  always_comb ahb_if.master.haddr   = haddr_reg;
-  always_comb ahb_if.master.hwdata  = hwdata_reg;
-  always_comb ahb_if.master.hwrite  = hwrite_reg;
-  always_comb ahb_if.master.hsize   = hsize_reg;
-  always_comb ahb_if.master.hburst  = hburst_reg;
-  always_comb ahb_if.master.htrans  = htrans_reg;
-  always_comb ahb_if.master.hmastlock= hmastlock;
-  always_comb ahb_if.master.hprot   = hprot;
+  always_comb out.haddr   = haddr_reg;
+  always_comb out.hwdata  = hwdata_reg;
+  always_comb out.hwrite  = hwrite_reg;
+  always_comb out.hsize   = hsize_reg;
+  always_comb out.hburst  = hburst_reg;
+  always_comb out.htrans  = htrans_reg;
+  always_comb out.hmastlock= hmastlock;
+  always_comb out.hprot   = hprot;
     
+  
+  assign in.cmd_done = done;
+  assign in.req_ack = req_ack;
+  
   assign hmastlock = '0;
   assign hprot = '0;
-  assign cmd_if.master.cmd_done = done;
-  assign cmd_if.master.req_ack = req_ack;
-  assign wdata_nxt = (cmd_if.master.wr && wr_done) ? cmd_if.master.wdata : wdata_reg;
+  assign wdata_nxt = (in.wr && wr_done) ? in.wdata : wdata_reg;
 
   //penable to be low during setup phase only
   always_ff @(posedge clk or negedge rst) begin
@@ -95,8 +97,9 @@ module ahb_m(clk, rst);
       hburst_reg  <= '0;
       htrans_reg  <= '0;
       seq_cnt     <= '0;
+      pr_state    <= IDLE;
     end
-    else if (ahb_if.master.hready) begin //pready dependent driven output
+    else if (out.hready) begin //pready dependent driven output
       pr_state    <= nx_state;
       haddr_reg   <= haddr_nxt;
       hwdata_reg  <= hwdata_nxt;
@@ -119,30 +122,31 @@ module ahb_m(clk, rst);
       byte_cnt_nxt= byte_cnt;
       seq_cnt_nxt = seq_cnt;
       done        = '0;
-      req_ack     = '0; 
+      req_ack     = '1; 
           
     case (pr_state) 
       IDLE : begin
-               if (cmd_if.master.req) begin
+              if (in.req) begin
                  nx_state     = START;
-                 byte_cnt_nxt = cmd_if.master.byte_cnt;
+                 byte_cnt_nxt = in.byte_cnt;
+                 req_ack     = '0;
                end  
              end
       
       START : begin
-                req_ack     = '1;
-                haddr_nxt    = cmd_if.master.start_addr;
-                hwrite_nxt   = cmd_if.master.wr;
-                hwdata_nxt   = cmd_if.master.wdata;
+                req_ack     = '0;
+                haddr_nxt    = in.start_addr;
+                hwrite_nxt   = in.wr;
+                hwdata_nxt   = in.wdata;
                 hsize_nxt    = 3'd2;
                 htrans_nxt   = 2'd2;
                 seq_cnt_nxt  = '0;
         
-                if  (byte_cnt%DATAW == '0) begin
-                  nx_state = INCR;
-                  hburst_nxt   = 3'd1; 
-                end
-                else if  (byte_cnt>=512) begin
+                //if (byte_cnt%DATAW == '0 && byte_cnt!=512 && byte_cnt!=256 && byte_cnt!=128) begin
+                  //nx_state = INCR;
+                  //hburst_nxt   = 3'd1; 
+                //end
+                if  (byte_cnt>=512) begin
                   nx_state     = INCR16;
                   byte_cnt_nxt = byte_cnt - 16'd512;
                   hburst_nxt   = 3'd7; 
@@ -170,11 +174,11 @@ module ahb_m(clk, rst);
                      htrans_nxt   = 2'd2;
                      seq_cnt_nxt  = '0;
         
-                     if  (byte_cnt%DATAW == '0) begin
-                       nx_state = INCR;
-                       hburst_nxt   = 3'd1; 
-                     end
-                     else if  (byte_cnt>=512) begin
+                    // if  (byte_cnt%DATAW == '0) begin
+                      // nx_state = INCR;
+                      // hburst_nxt   = 3'd1; 
+                     //end
+                     if  (byte_cnt>=512) begin
                        nx_state     = INCR16;
                        byte_cnt_nxt = byte_cnt - 16'd512;
                        hburst_nxt   = 3'd7; 
@@ -195,11 +199,12 @@ module ahb_m(clk, rst);
                      end
                    end
                    
-                   else if (cmd_if.master.req) begin
-                     req_ack     = '1;
-                     haddr_nxt    = cmd_if.master.start_addr;
-                     hwrite_nxt   = cmd_if.master.wr;
-                     hwdata_nxt   = cmd_if.master.wdata;
+                   else if (in.req) begin
+                     done         = '1;
+                     req_ack      = '0;
+                     haddr_nxt    = in.start_addr;
+                     hwrite_nxt   = in.wr;
+                     hwdata_nxt   = in.wdata;
                      hsize_nxt    = 3'd2;
                      htrans_nxt   = 2'd2;
                      seq_cnt_nxt  = '0;
@@ -228,12 +233,18 @@ module ahb_m(clk, rst);
                        hburst_nxt   = 3'd1; 
                      end  
                    end
+                   else begin 
+                     done = '1;
+                     nx_state = IDLE;
+                     htrans_nxt = '0;
+                     seq_cnt_nxt = '0;
+                   end
                  end
         
                  else begin
                    htrans_nxt   = 2'd3;
                    seq_cnt_nxt  = seq_cnt + 4'd1;
-                   haddr_nxt    = haddr + 32'd32;
+                   haddr_nxt    = haddr_reg + 32'd32;
                  end   
                end
                
