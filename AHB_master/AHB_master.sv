@@ -135,7 +135,7 @@ module ahb_m(clk, rst);
                 hwrite_nxt   = cmd_if.master.wr;
                 hwdata_nxt   = cmd_if.master.wdata;
                 hsize_nxt    = 3'd2;
-                htrans_nxt   = 2'd3;
+                htrans_nxt   = 2'd2;
                 seq_cnt_nxt  = '0;
         
                 if  (byte_cnt%DATAW == '0) begin
@@ -164,8 +164,80 @@ module ahb_m(clk, rst);
               end
       
       INCR16 : begin
+                 if (seq_cnt == 4'd15) begin
+                   if (byte_cnt != '0) begin
+                     hsize_nxt    = 3'd2;
+                     htrans_nxt   = 2'd2;
+                     seq_cnt_nxt  = '0;
+        
+                     if  (byte_cnt%DATAW == '0) begin
+                       nx_state = INCR;
+                       hburst_nxt   = 3'd1; 
+                     end
+                     else if  (byte_cnt>=512) begin
+                       nx_state     = INCR16;
+                       byte_cnt_nxt = byte_cnt - 16'd512;
+                       hburst_nxt   = 3'd7; 
+                     end
+                     else if  (byte_cnt>=256) begin
+                       nx_state = INCR8;
+                       byte_cnt_nxt = byte_cnt - 16'd256;
+                       hburst_nxt   = 3'd5; 
+                     end
+                     else if  (byte_cnt>=128) begin
+                       nx_state = INCR4;
+                       byte_cnt_nxt = byte_cnt - 16'd128;
+                       hburst_nxt   = 3'd3; 
+                     end
+                     else begin
+                       nx_state = INCR;
+                       hburst_nxt   = 3'd1; 
+                     end
+                   end
+                   
+                   else if (cmd_if.master.req) begin
+                     req_ack     = '1;
+                     haddr_nxt    = cmd_if.master.start_addr;
+                     hwrite_nxt   = cmd_if.master.wr;
+                     hwdata_nxt   = cmd_if.master.wdata;
+                     hsize_nxt    = 3'd2;
+                     htrans_nxt   = 2'd2;
+                     seq_cnt_nxt  = '0;
+        
+                     if  (byte_cnt%DATAW == '0) begin
+                       nx_state = INCR;
+                       hburst_nxt   = 3'd1; 
+                     end
+                     else if  (byte_cnt>=512) begin
+                       nx_state     = INCR16;
+                       byte_cnt_nxt = byte_cnt - 16'd512;
+                       hburst_nxt   = 3'd7; 
+                     end
+                     else if  (byte_cnt>=256) begin
+                       nx_state = INCR8;
+                       byte_cnt_nxt = byte_cnt - 16'd256;
+                       hburst_nxt   = 3'd5; 
+                     end
+                     else if  (byte_cnt>=128) begin
+                       nx_state = INCR4;
+                       byte_cnt_nxt = byte_cnt - 16'd128;
+                       hburst_nxt   = 3'd3; 
+                     end
+                     else begin
+                       nx_state = INCR;
+                       hburst_nxt   = 3'd1; 
+                     end  
+                   end
+                 end
+        
+                 else begin
+                   htrans_nxt   = 2'd3;
+                   seq_cnt_nxt  = seq_cnt + 4'd1;
+                   haddr_nxt    = haddr + 32'd32;
+                 end   
+               end
                
-               
+        endcase
       end
 
 endmodule
