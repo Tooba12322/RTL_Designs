@@ -79,11 +79,11 @@ module ahb_m(clk, rst);
   //penable to be low during setup phase only
   always_ff @(posedge clk or negedge rst) begin
     if (!rst) begin
-      byte_cnt <= '0;
+      
       wdata_reg<= '0;
     end
     else begin
-      byte_cnt <= byte_cnt_nxt;
+      
       wdata_reg<= wdata_nxt;
     end
   end
@@ -97,6 +97,7 @@ module ahb_m(clk, rst);
       hburst_reg  <= '0;
       htrans_reg  <= '0;
       seq_cnt     <= '0;
+      byte_cnt    <= '0;
       pr_state    <= IDLE;
     end
     else if (out.hready) begin //pready dependent driven output
@@ -108,6 +109,7 @@ module ahb_m(clk, rst);
       hburst_reg  <= hburst_nxt;
       htrans_reg  <= htrans_nxt;
       seq_cnt     <= seq_cnt_nxt;
+      byte_cnt    <= byte_cnt_nxt;
     end
   end
   
@@ -142,11 +144,12 @@ module ahb_m(clk, rst);
                 htrans_nxt   = 2'd2;
                 seq_cnt_nxt  = '0;
         
-                //if (byte_cnt%DATAW == '0 && byte_cnt!=512 && byte_cnt!=256 && byte_cnt!=128) begin
-                  //nx_state = INCR;
-                  //hburst_nxt   = 3'd1; 
-                //end
-                if  (byte_cnt>=512) begin
+                if (byte_cnt%DATAW == '0 && byte_cnt!=512 && byte_cnt!=256 && byte_cnt!=128) begin
+                  nx_state = INCR;
+                  hburst_nxt   = 3'd1;
+                  byte_cnt_nxt = byte_cnt - 16'd4;
+                end
+                else if  (byte_cnt>=512) begin
                   nx_state     = INCR16;
                   byte_cnt_nxt = byte_cnt - 16'd512;
                   hburst_nxt   = 3'd7; 
@@ -163,7 +166,8 @@ module ahb_m(clk, rst);
                 end
                 else begin
                   nx_state = INCR;
-                  hburst_nxt   = 3'd1; 
+                  hburst_nxt   = 3'd1;
+                  byte_cnt_nxt = byte_cnt - 16'd4;
                 end
               end
       
@@ -174,44 +178,10 @@ module ahb_m(clk, rst);
                      htrans_nxt   = 2'd2;
                      seq_cnt_nxt  = '0;
         
-                    // if  (byte_cnt%DATAW == '0) begin
-                      // nx_state = INCR;
-                      // hburst_nxt   = 3'd1; 
-                     //end
-                     if  (byte_cnt>=512) begin
-                       nx_state     = INCR16;
-                       byte_cnt_nxt = byte_cnt - 16'd512;
-                       hburst_nxt   = 3'd7; 
-                     end
-                     else if  (byte_cnt>=256) begin
-                       nx_state = INCR8;
-                       byte_cnt_nxt = byte_cnt - 16'd256;
-                       hburst_nxt   = 3'd5; 
-                     end
-                     else if  (byte_cnt>=128) begin
-                       nx_state = INCR4;
-                       byte_cnt_nxt = byte_cnt - 16'd128;
-                       hburst_nxt   = 3'd3; 
-                     end
-                     else begin
-                       nx_state = INCR;
-                       hburst_nxt   = 3'd1; 
-                     end
-                   end
-                   
-                   else if (in.req) begin
-                     done         = '1;
-                     req_ack      = '0;
-                     haddr_nxt    = in.start_addr;
-                     hwrite_nxt   = in.wr;
-                     hwdata_nxt   = in.wdata;
-                     hsize_nxt    = 3'd2;
-                     htrans_nxt   = 2'd2;
-                     seq_cnt_nxt  = '0;
-        
                      if  (byte_cnt%DATAW == '0) begin
                        nx_state = INCR;
-                       hburst_nxt   = 3'd1; 
+                       hburst_nxt   = 3'd1;
+                       byte_cnt_nxt = byte_cnt - 16'd4;
                      end
                      else if  (byte_cnt>=512) begin
                        nx_state     = INCR16;
@@ -231,6 +201,44 @@ module ahb_m(clk, rst);
                      else begin
                        nx_state = INCR;
                        hburst_nxt   = 3'd1; 
+                       byte_cnt_nxt = byte_cnt - 16'd4;
+                     end
+                   end
+                   
+                   else if (in.req) begin
+                     done         = '1;
+                     req_ack      = '0;
+                     haddr_nxt    = in.start_addr;
+                     hwrite_nxt   = in.wr;
+                     hwdata_nxt   = in.wdata;
+                     hsize_nxt    = 3'd2;
+                     htrans_nxt   = 2'd2;
+                     seq_cnt_nxt  = '0;
+        
+                     if  (byte_cnt%DATAW == '0) begin
+                       nx_state = INCR;
+                       hburst_nxt   = 3'd1;
+                       byte_cnt_nxt = byte_cnt - 16'd4;
+                     end
+                     else if  (byte_cnt>=512) begin
+                       nx_state     = INCR16;
+                       byte_cnt_nxt = byte_cnt - 16'd512;
+                       hburst_nxt   = 3'd7; 
+                     end
+                     else if  (byte_cnt>=256) begin
+                       nx_state = INCR8;
+                       byte_cnt_nxt = byte_cnt - 16'd256;
+                       hburst_nxt   = 3'd5; 
+                     end
+                     else if  (byte_cnt>=128) begin
+                       nx_state = INCR4;
+                       byte_cnt_nxt = byte_cnt - 16'd128;
+                       hburst_nxt   = 3'd3; 
+                     end
+                     else begin
+                       nx_state = INCR;
+                       hburst_nxt   = 3'd1;
+                       byte_cnt_nxt = byte_cnt - 16'd4;
                      end  
                    end
                    else begin 
@@ -246,6 +254,60 @@ module ahb_m(clk, rst);
                    seq_cnt_nxt  = seq_cnt + 4'd1;
                    haddr_nxt    = haddr_reg + 32'd32;
                  end   
+               end
+      
+          INCR : begin
+                   if (byte_cnt == '0) begin
+                     if (in.req) begin
+                       done         = '1;
+                       req_ack      = '0;
+                       haddr_nxt    = in.start_addr;
+                       hwrite_nxt   = in.wr;
+                       hwdata_nxt   = in.wdata;
+                       hsize_nxt    = 3'd2;
+                       htrans_nxt   = 2'd2;
+                       seq_cnt_nxt  = '0;
+        
+                       if  (byte_cnt%DATAW == '0) begin
+                         nx_state = INCR;
+                         hburst_nxt   = 3'd1;
+                         byte_cnt_nxt = byte_cnt - 16'd4;
+                       end
+                       else if  (byte_cnt>=512) begin
+                         nx_state     = INCR16;
+                         byte_cnt_nxt = byte_cnt - 16'd512;
+                         hburst_nxt   = 3'd7; 
+                       end
+                       else if  (byte_cnt>=256) begin
+                         nx_state = INCR8;
+                         byte_cnt_nxt = byte_cnt - 16'd256;
+                         hburst_nxt   = 3'd5; 
+                       end
+                       else if  (byte_cnt>=128) begin
+                         nx_state = INCR4;
+                         byte_cnt_nxt = byte_cnt - 16'd128;
+                         hburst_nxt   = 3'd3; 
+                       end
+                       else begin
+                         nx_state = INCR;
+                         hburst_nxt   = 3'd1;
+                         byte_cnt_nxt = byte_cnt - 16'd4;
+                       end  
+                     end
+                     else begin 
+                       done = '1;
+                       nx_state = IDLE;
+                       htrans_nxt = '0;
+                       seq_cnt_nxt = '0;
+                     end
+                 end                   
+                  
+                 else begin
+                     htrans_nxt    = 2'd3;
+                     byte_cnt_nxt  = byte_cnt - 16'd4;
+                     haddr_nxt     = haddr_reg + 32'd4;
+                 end
+                   
                end
                
         endcase
