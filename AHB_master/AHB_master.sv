@@ -61,7 +61,7 @@ module ahb_m(clk, rst);
   
   //Driving master output from flops
   always_comb out.haddr   = haddr_reg;
-  always_comb out.hwdata  = hwdata_reg;
+  always_comb out.hwdata  = wdata_reg;
   always_comb out.hwrite  = hwrite_reg;
   always_comb out.hsize   = hsize_reg;
   always_comb out.hburst  = hburst_reg;
@@ -72,18 +72,23 @@ module ahb_m(clk, rst);
   
   assign in.cmd_done = done;
   assign in.req_ack = req_ack;
+  assign in.wr_done = (out.hwrite && out.htrans!='0 && out.hready) ? '1 : '0;
   
   assign hmastlock = '0;
   assign hprot = '0;
-  assign wdata_nxt = (in.wr && wr_done) ? in.wdata : wdata_reg;
+  assign wdata_nxt = (out.hwrite && out.htrans!='0) ? in.wdata : wdata_reg;
+  assign hrdata_nxt = (!out.hwrite && out.htrans!='0 && out.hready && out.hresp) ? out.hrdata : hrdata_reg;
+  
 
   //penable to be low during setup phase only
   always_ff @(posedge clk or negedge rst) begin
     if (!rst) begin
-      wdata_reg<= '0;
+      wdata_reg  <= '0;
+      hrdata_reg <= '0;
     end
     else begin 
-      wdata_reg<= wdata_nxt;
+      wdata_reg  <= wdata_nxt;
+      hrdata_reg <= hrdata_nxt;
     end
   end
   
@@ -103,7 +108,7 @@ module ahb_m(clk, rst);
     else if (out.hready) begin //hready dependent flops
       pr_state    <= nx_state;
       haddr_reg   <= haddr_nxt;
-      hwdata_reg  <= hwdata_nxt;
+      hwdata_reg  <= wdata_reg;
       hwrite_reg  <= hwrite_nxt;
       hsize_reg   <= hsize_nxt;
       hburst_reg  <= hburst_nxt;
