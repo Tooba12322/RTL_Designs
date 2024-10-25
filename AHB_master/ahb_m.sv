@@ -182,10 +182,11 @@ module ahb_m(clk, rst);
       
      FX_INCR : begin
                  if (seq_cnt == total_seq_cnt) begin
-                   if (byte_cnt != '0) begin
+                   if (byte_cnt != 16'd0) begin
                      hsize_nxt    = 3'd2;
                      htrans_nxt   = 2'd2;
                      seq_cnt_nxt  = '0;
+                     req_ack      = '0;
         
                      if  (byte_cnt%DATA_BYTES == '0 && byte_cnt!=512 && byte_cnt!=256 && byte_cnt!=128) begin
                        nx_state = UN_INCR;
@@ -268,7 +269,7 @@ module ahb_m(clk, rst);
                    htrans_nxt   = 2'd3;
                    seq_cnt_nxt  = seq_cnt + 4'd1;
                    haddr_nxt    = haddr_reg + 32'd32; // consider byte addresible slave
-                   req_ack      = (seq_cnt==total_seq_cnt - 4'd1) ? '1 : '0;
+                   req_ack      = (seq_cnt==total_seq_cnt - 4'd1 && byte_cnt == DATA_BYTES) ? '1 : '0;
                  end   
                end
       
@@ -322,10 +323,10 @@ module ahb_m(clk, rst);
                  end                   
                   
                  else begin
-                     htrans_nxt    = 2'd3;
-                     byte_cnt_nxt  = byte_cnt - 16'd32;
+                     htrans_nxt    = (byte_cnt < DATA_BYTES) ? 2'd2 : 2'd3;
+                     byte_cnt_nxt  = (byte_cnt < DATA_BYTES) ? '0 : byte_cnt - 16'd32;
                      haddr_nxt     = haddr_reg + 32'd32;
-                     req_ack       = (byte_cnt==DATA_BYTES) ? '1 : '0;
+                     req_ack       = (byte_cnt<=DATA_BYTES) ? '1 : '0;
                  end
                    
                end
