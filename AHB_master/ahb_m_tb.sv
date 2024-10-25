@@ -33,27 +33,29 @@ module ahb_m_tb ();
     DUT.in.start_addr = $urandom_range(32'd10,32'd100);
     DUT.in.wdata = $urandom_range(32'd1000,32'd2000);
     
+    #30;
     
-    wait(DUT.in.req_ack);
-    #30 DUT.in.req = '1;
+    /*wait(DUT.in.req_ack);
+    #5 @(posedge clk) DUT.in.req = '1;
     DUT.in.byte_cnt = 16'd128;
     DUT.in.wr       = '0;
     DUT.in.start_addr = $urandom_range(32'd10,32'd100);
     
-    wait(DUT.in.req_ack);
-    @(posedge clk) DUT.in.req = '0;
-    
     #50;
-    @(posedge clk) DUT.in.req = '1;
+    
+    wait(DUT.in.req_ack);
+    #5 @(posedge clk) DUT.in.req = '1;
     DUT.in.byte_cnt = $urandom_range(16'd2,16'd30);
     DUT.in.wr       = '1;
     DUT.in.start_addr = $urandom_range(32'd10,32'd100);
-    DUT.in.wdata = $urandom_range(32'd1000,32'd2000);
+    DUT.in.wdata = $urandom_range(32'd1000,32'd2000);*/
+    
+    #50;
     
     wait(DUT.in.req_ack);
-    @(posedge clk) DUT.in.req = '0;
+    #5 @(posedge clk) DUT.in.req = '0;
     
-    #50 $finish;
+    #1000 $finish;
     
   end
  
