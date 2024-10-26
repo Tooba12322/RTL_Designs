@@ -80,14 +80,11 @@ module ahb_m(clk, rst);
   assign hrdata_nxt = (!out.hwrite && out.htrans!='0 && out.hready && out.hresp) ? out.hrdata : hrdata_reg;
   
 
-  //penable to be low during setup phase only
   always_ff @(posedge clk or negedge rst) begin
     if (!rst) begin
-      wdata_reg  <= '0;
       hrdata_reg <= '0;
     end
     else begin 
-      wdata_reg  <= wdata_nxt;
       hrdata_reg <= hrdata_nxt;
     end
   end
@@ -95,6 +92,7 @@ module ahb_m(clk, rst);
   always_ff @(posedge clk or negedge rst) begin
     if (!rst) begin
       haddr_reg   <= '0;
+      wdata_reg   <= '0;
       hwdata_reg  <= '0;
       hwrite_reg  <= '0;
       hsize_reg   <= '0;
@@ -116,6 +114,7 @@ module ahb_m(clk, rst);
       seq_cnt     <= seq_cnt_nxt;
       byte_cnt    <= byte_cnt_nxt;
       total_seq_cnt<= total_seq_cnt_nxt;
+      wdata_reg   <= wdata_nxt;
     end
   end
   
@@ -176,7 +175,7 @@ module ahb_m(clk, rst);
                 else begin
                   nx_state = UN_INCR;
                   hburst_nxt   = 3'd1;
-                  byte_cnt_nxt = in.byte_cnt- 16'd32;
+                  byte_cnt_nxt = (in.byte_cnt < DATA_BYTES) ? '0 : in.byte_cnt - 16'd32;
                 end
               end
       
@@ -214,7 +213,7 @@ module ahb_m(clk, rst);
                      else begin
                        nx_state = UN_INCR;
                        hburst_nxt   = 3'd1; 
-                       byte_cnt_nxt = byte_cnt - 16'd32;
+                       byte_cnt_nxt = (byte_cnt < DATA_BYTES) ? '0 : byte_cnt - 16'd32;
                      end
                    end
                    
@@ -254,7 +253,7 @@ module ahb_m(clk, rst);
                      else begin
                        nx_state = UN_INCR;
                        hburst_nxt   = 3'd1;
-                       byte_cnt_nxt = in.byte_cnt - 16'd32;
+                       byte_cnt_nxt = (in.byte_cnt < DATA_BYTES) ? '0 : in.byte_cnt - 16'd32;
                      end  
                    end
                    else begin 
@@ -269,7 +268,7 @@ module ahb_m(clk, rst);
                    htrans_nxt   = 2'd3;
                    seq_cnt_nxt  = seq_cnt + 4'd1;
                    haddr_nxt    = haddr_reg + 32'd32; // consider byte addresible slave
-                   req_ack      = (seq_cnt==total_seq_cnt - 4'd1 && byte_cnt == DATA_BYTES) ? '1 : '0;
+                   req_ack      = (seq_cnt==total_seq_cnt - 4'd1 && byte_cnt <= DATA_BYTES) ? '1 : '0;
                  end   
                end
       
@@ -311,7 +310,7 @@ module ahb_m(clk, rst);
                        else begin
                          nx_state = UN_INCR;
                          hburst_nxt   = 3'd1;
-                         byte_cnt_nxt = in.byte_cnt - 16'd32;
+                         byte_cnt_nxt = (in.byte_cnt < DATA_BYTES) ? '0 : in.byte_cnt - 16'd32;
                        end  
                      end
                      else begin 
