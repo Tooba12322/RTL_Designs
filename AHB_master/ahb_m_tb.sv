@@ -1,4 +1,4 @@
-// Waveform : 
+// Waveform : https://www.edaplayground.com/w/x/Awt
 
 `timescale 1ns/1ps
 
@@ -35,27 +35,27 @@ module ahb_m_tb ();
     
     #30;
     
-    /*wait(DUT.in.req_ack);
+    wait(DUT.in.req_ack);
     #5 @(posedge clk) DUT.in.req = '1;
     DUT.in.byte_cnt = 16'd128;
     DUT.in.wr       = '0;
     DUT.in.start_addr = $urandom_range(32'd10,32'd100);
     
-    #50;
+    #20;
     
     wait(DUT.in.req_ack);
     #5 @(posedge clk) DUT.in.req = '1;
     DUT.in.byte_cnt = $urandom_range(16'd2,16'd30);
     DUT.in.wr       = '1;
     DUT.in.start_addr = $urandom_range(32'd10,32'd100);
-    DUT.in.wdata = $urandom_range(32'd1000,32'd2000);*/
+    DUT.in.wdata = $urandom_range(32'd1000,32'd2000);
     
-    #50;
+    #20;
     
-    wait(DUT.in.req_ack);
+    wait(DUT.in.cmd_done);
     #5 @(posedge clk) DUT.in.req = '0;
     
-    #1000 $finish;
+    #100 $finish;
     
   end
  
