@@ -72,21 +72,30 @@ module ahb_m(clk, rst);
   
   assign in.cmd_done = done;
   assign in.req_ack = req_ack;
-  assign in.wr_done = (out.hwrite && out.htrans!='0 && out.hready) ? '1 : '0;
+  assign in.wr_done = wr_done;
   
   assign hmastlock = '0;
   assign hprot = '0;
   assign wdata_nxt = (out.hwrite && out.htrans!='0) ? in.wdata : wdata_reg;
-  assign hrdata_nxt = (!out.hwrite && out.htrans!='0 && out.hready && out.hresp) ? out.hrdata : hrdata_reg;
+  assign hrdata_nxt = (out.htrans!='0 && out.hready && out.hresp) ? out.hrdata : hrdata_reg;
   
-
   always_ff @(posedge clk or negedge rst) begin
-    if (!rst) begin
-      hrdata_reg <= '0;
-    end
-    else begin 
-      hrdata_reg <= hrdata_nxt;
-    end
+    if (!rst) wr_done <= '0;
+    else if (out.hwrite && out.htrans!='0 && out.hready) wr_done <= '1;
+    else wr_done <= '0;
+  end
+  
+  always_ff @(posedge clk or negedge rst) begin
+    if (!rst) done <= '0;
+    else if (pr_state==FX_INCR && seq_cnt== total_seq_cnt-1 && out.hready && byte_cnt<=DATA_BYTES) done <= '1;
+    else if (pr_state==UN_INCR && out.hready && byte_cnt<=DATA_BYTES && byte_cnt!='0) done <= '1;
+    else if (out.hready && in.byte_cnt<=DATA_BYTES) done <= '1;
+    else done <= '0;
+  end
+  
+  always_ff @(posedge clk or negedge rst) begin
+    if (!rst) hrdata_reg <= '0;
+    else hrdata_reg <= hrdata_nxt;
   end
   
   always_ff @(posedge clk or negedge rst) begin
@@ -129,7 +138,6 @@ module ahb_m(clk, rst);
       byte_cnt_nxt= byte_cnt;
       seq_cnt_nxt = seq_cnt;
       total_seq_cnt_nxt = total_seq_cnt;
-      done        = '0;
       req_ack     = '1; 
           
     case (pr_state) 
@@ -254,10 +262,11 @@ module ahb_m(clk, rst);
                        nx_state = UN_INCR;
                        hburst_nxt   = 3'd1;
                        byte_cnt_nxt = (in.byte_cnt < DATA_BYTES) ? '0 : in.byte_cnt - 16'd32;
+                       req_ack       = (byte_cnt<=DATA_BYTES) ? '1 : '0;
                      end  
                    end
                    else begin 
-                     done = '1;
+                     
                      nx_state = IDLE;
                      htrans_nxt = '0;
                      seq_cnt_nxt = '0;
@@ -267,15 +276,15 @@ module ahb_m(clk, rst);
                  else begin
                    htrans_nxt   = 2'd3;
                    seq_cnt_nxt  = seq_cnt + 4'd1;
-                   haddr_nxt    = haddr_reg + 32'd32; // consider byte addresible slave
-                   req_ack      = (seq_cnt==total_seq_cnt - 4'd1 && byte_cnt <= DATA_BYTES) ? '1 : '0;
+                   haddr_nxt    = haddr_reg + 32'd32; // consider byte addresible slave 
+                   req_ack      = (seq_cnt==total_seq_cnt - 4'd1 && byte_cnt <= DATA_BYTES && out.hready) ? '1 : '0;
                  end   
                end
       
        UN_INCR : begin
                    if (byte_cnt == '0) begin
                      if (in.req) begin
-                       done         = '1;
+                       
                        req_ack      = '0;
                        haddr_nxt    = in.start_addr;
                        hwrite_nxt   = in.wr;
@@ -311,10 +320,11 @@ module ahb_m(clk, rst);
                          nx_state = UN_INCR;
                          hburst_nxt   = 3'd1;
                          byte_cnt_nxt = (in.byte_cnt < DATA_BYTES) ? '0 : in.byte_cnt - 16'd32;
+                         req_ack       = (byte_cnt<=DATA_BYTES) ? '1 : '0;
                        end  
                      end
                      else begin 
-                       done = '1;
+                      
                        nx_state = IDLE;
                        htrans_nxt = '0;
                        seq_cnt_nxt = '0;
