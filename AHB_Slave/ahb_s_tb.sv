@@ -1,7 +1,6 @@
 
 
-// Waveform : https://www.edaplayground.com/w/x/Vse
-
+// Waveform : https://www.edaplayground.com/w/x/Hhr
 module ahb_s_tb ();
   
   logic clk;
@@ -22,7 +21,7 @@ module ahb_s_tb ();
   initial begin
     $dumpfile("ahb_s.vcd");
     $dumpvars(0,ahb_s_tb);
-    $monitor($time,"  rst=%b, clk=%b, req_rnw_i=%b, req_addr_i=%h, MEM[0]=%h, MEM[1]=%h, MEM[2]=%h, MEM[3]=%h, MEM[4]=%h, MEM[5]=%h, req_rdata_o = %h ",rst,clk,DUT.mem.req_rnw_i,DUT.mem.req_addr_i,DUT.mem.mem[0],DUT.mem.mem[1],DUT.mem.mem[2],DUT.mem.mem[3],DUT.mem.mem[4],DUT.mem.mem[5],DUT.mem.req_rdata_o); 
+    $monitor($time,"  rst=%b, clk=%b, req_rnw_i=%b, req_addr_i=%h, MEM[0]=%h, MEM[1]=%h, MEM[2]=%h, MEM[3]=%h, MEM[4]=%h, MEM[5]=%h, MEM[6]=%h, MEM[7]=%h, MEM[8]=%h, MEM[9]=%h, MEM[10]=%h, MEM[11]=%h, MEM[12]=%h, MEM[13]=%h, MEM[14]=%h, MEM[15]=%h,req_rdata_o = %h ",rst,clk,DUT.mem.req_rnw_i,DUT.mem.req_addr_i,DUT.mem.mem[0],DUT.mem.mem[1],DUT.mem.mem[2],DUT.mem.mem[3],DUT.mem.mem[4],DUT.mem.mem[5],DUT.mem.mem[6],DUT.mem.mem[7],DUT.mem.mem[8],DUT.mem.mem[9],DUT.mem.mem[10],DUT.mem.mem[11],DUT.mem.mem[12],DUT.mem.mem[13],DUT.mem.mem[14],DUT.mem.mem[15],DUT.mem.req_rdata_o); 
     clk       = '0;
     rst       = '0;
     hwrite    = '0;
@@ -36,6 +35,7 @@ module ahb_s_tb ();
     
     #9 rst = '1;
   
+    // Write busrt of INCR16
     #5;
     wait(hready);
       hwrite    = '1; 
@@ -61,32 +61,29 @@ module ahb_s_tb ();
     hwdata    =  $urandom_range('0,32'hFFFFFFFF);
     #2;
     
-    /*for (int i='0;i<16;i++) begin
-      wait(pready_o);
-      psel_i    = '1;
-      penable_i = '0;
-      paddr_i   = $urandom_range('0,4'hF);
-      pwrite_i  = '0;
-          
-      #2 @ (posedge clk) penable_i = '1;
-      
-      if (!pready_o) begin
-        wait (pready_o);
-        #3;
-        wait (pready_o);
-        #4 @ (posedge clk) psel_i = '0;
-      end
-      else begin
-        #3;
-        wait (pready_o);
-        #4 @ (posedge clk) psel_i = '0;
-      end
-      
-      #7;
-      
-    end*/
+    // Read busrt of INCR8 
+    #15;
+    wait(hready);
+      hwrite    = '0; 
+      haddr     =  $urandom_range('0,32'd16);
+      hsize     =  3'd2;
+      hburst    =  3'd5;
+      htrans    =  2'd2;
+    #5;
+    wait(hready);
     
-    #100 $finish;
+    for (int i='0;i<7;i++) begin
+      wait(hready);
+      @ (posedge clk); 
+      haddr     =  $urandom_range('0,32'd16);
+      htrans    =  2'd3;
+      #7; 
+    end
+    wait(hready);
+    @ (posedge clk) htrans    =  2'd0;
+    
+    
+    #20 $finish;
   end
     
   always #5 clk = !clk;
