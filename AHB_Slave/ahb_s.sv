@@ -17,7 +17,11 @@ module ahb_s(
   logic nwr, req, receive;
   assign nwr = !hwrite;
   assign hresp = '1;
-  assign req = (htrans==2'd2) ? '1 : '0;
+  always @(posedge clk or negedge rst) begin
+    if (!rst) req <= '0;
+    else if (htrans==2'd2 || htrans==2'd3) req <= '1;
+    else req <= '0;
+  end 
   
   MEM mem(.clk(clk),.rst(rst),.req_i(req),.req_rnw_i(nwr),.req_addr_i(haddr),
           .req_wdata_i(hwdata),.req_ready_o(hready),.req_rdata_o(hrdata)); 
