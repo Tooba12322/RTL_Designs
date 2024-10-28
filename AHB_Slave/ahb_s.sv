@@ -14,16 +14,18 @@ module ahb_s(
   output logic [31:0] hrdata,
   output logic hready, hresp
 );
-  logic nwr, req, receive;
+  logic nwr, req, start;
   assign nwr = !hwrite;
+  assign start = (htrans==2'd2 && !nwr) ? '1 : '0; 
   assign hresp = '1;
   always @(posedge clk or negedge rst) begin
     if (!rst) req <= '0;
     else if (htrans==2'd2 || htrans==2'd3) req <= '1;
     else req <= '0;
   end 
+  assign req_i = start || req;
   
-  MEM mem(.clk(clk),.rst(rst),.req_i(req),.req_rnw_i(nwr),.req_addr_i(haddr),
+  MEM mem(.clk(clk),.rst(rst),.req_i(req_i),.req_rnw_i(nwr),.req_addr_i(haddr),
           .req_wdata_i(hwdata),.req_ready_o(hready),.req_rdata_o(hrdata)); 
 endmodule
 
@@ -50,13 +52,13 @@ module MEM (
     else cnt <= cnt + 4'd1;
   end   
   
-  assign req_rdata_o = (req_ready_o && req_i && req_rnw_i) ? req_rdata : '0; //Drive rdata when ready ,req and rnw are high
+  assign req_rdata_o = req_rdata; //Drive rdata when ready ,req and rnw are high
   
   assign req_ready_o = ((cnt%2) && (cnt%3)) || (cnt[2]=='1); //logic to generate ready out
   
   always_ff @(posedge clk or negedge rst) begin
     if (!rst) req_rdata <= '0;
-    else if (req_i && req_rnw_i) req_rdata <=  mem[req_addr_i];//read
+    else if (req_i && req_rnw_i && req_ready_o) req_rdata <=  mem[req_addr_i];//read
   end  
   
   always_ff @(posedge clk or negedge rst) begin
