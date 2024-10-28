@@ -16,11 +16,11 @@ module ahb_s(
 );
   logic nwr, req, receive;
   assign nwr = !hwrite;
+  assign hresp = '1;
   assign req = (htrans==2'd2) ? '1 : '0;
-  assign receive = (heady && hresp) ? '1 : '0;
   
   MEM mem(.clk(clk),.rst(rst),.req_i(req),.req_rnw_i(nwr),.req_addr_i(haddr),
-          .req_wdata_i(hwdata),.req_ready_o(receive),.req_rdata_o(hrdata)); 
+          .req_wdata_i(hwdata),.req_ready_o(hready),.req_rdata_o(hrdata)); 
 endmodule
 
 // A memory interface
