@@ -87,6 +87,56 @@ module ahb_s_tb ();
   end
     
   always #5 clk = !clk;
+
+
+
+  //Not related to AHB slave
+
+  module atomic_counters (
+  input                   clk,
+  input                   reset,
+  input                   trig_i,
+  input                   req_i,
+  input                   atomic_i,
+  output logic            ack_o,
+  output logic[31:0]      count_o
+);
+
+  
+  logic [63:0] count_q;
+  logic [63:0] count;
+  logic ack;
+  logic[31:0] cnt;
+
+  assign ack_o = ack;
+  assign count_o = cnt;
+  
+  always_comb count = (trig_i) ? count_q + 64'h1 : count_q;
+    
+  always_ff @(posedge clk or posedge reset)
+    if (reset)
+      count_q[63:0] <= 64'h0;
+    else
+      count_q[63:0] <= count;
+ 
+  always_ff @(posedge clk or posedge reset)
+    if (reset)
+      ack <= 1'h0;
+    else if (req_i)
+      ack <= 1'h1;
+    else ack <= 1'h0;
+  
+  always_ff @(posedge clk or posedge reset)
+    if (reset)
+      cnt <= 32'h0;
+    else if (req_i) 
+      cnt <= (atomic_i) ? (trig_i) ? count[31:0] : count_q[31:0] : count_q[63:32];
+    else cnt <= 32'h0;
+ 
+
+endmodule
+
+
   
 endmodule
 
