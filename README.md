@@ -66,7 +66,6 @@ Complex RTL Designs :
 11. I2C master controller
 12. AHB master
 13. AHB Slave
-14. log2 function
 
 
 ================================================================== TBD ==================================================================
@@ -76,8 +75,8 @@ Complex RTL Designs :
 2. Digital PLL: Design a Phase-Locked Loop (PLL) that locks the output frequency to the input reference frequency with adjustable phase and frequency.
 3. Cache Memory: Design a 4-way set-associative cache with a 16-entry cache size and implement cache read and write policies.
 4. Floating-Point Unit: Create a basic floating-point arithmetic unit that supports addition and subtraction operations.
-5. DMA Controller: Design a Direct Memory Access (DMA) controller that can transfer data between memory and peripherals without CPU intervention.
-6. Cyclic Redundancy Check (CRC): Create a module that computes a CRC for error detection in data transmission.
+5. Cyclic Redundancy Check (CRC): Create a module that computes a CRC for error detection in data transmission.
+6. Log2 function calculator
 7. Floating-Point Multiplication: Implement a floating-point multiplier that supports IEEE 754 single-precision floating-point format.
 8. Configurable Logic Block (CLB): Create a configurable logic block with a flexible interconnect network that can be used to implement various combinational and sequential logic.
 9. Error Detection and Correction (ECC): Create an ECC module that detects and corrects single-bit errors in memory.
@@ -86,11 +85,11 @@ Complex RTL Designs :
 12. Divider:Create a synchronous divider that divides two N-bit numbers and outputs the quotient and remainder.
 13. Square Root Calculator: Design a circuit that computes the integer square root of an N-bit input.
 14. Matrix Multiplier: Implement a circuit that multiplies two square matrices of size N x N.
-15. Digital Signal Processing (DSP) Filters: Implement a finite impulse response (FIR) filter that processes an input signal and outputs the filtered signal.
 16. Polynomial Evaluator: Design a circuit that evaluates a polynomial of degree N for a given input value.
 17. Sigmoid function
 18. Tanh function
 19. Softmax function
+20. CNN building modules
 
 
 many more to come....
