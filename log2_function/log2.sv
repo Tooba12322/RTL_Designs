@@ -21,7 +21,7 @@ module log2 (
                 valid <= 1;   // Assume valid initially
 
                 // Find the highest power of 2
-                for (int i = 0; i < M; i++) begin
+                for (int i = 0; i < 8; i++) begin
                     if (value >= (1 << i)) begin
                         result <= i; // Update result
                     end
