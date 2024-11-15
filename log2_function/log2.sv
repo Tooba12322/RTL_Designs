@@ -6,7 +6,7 @@ module log2 (
     output logic valid              // Valid signal
 );
     parameter int N = 8; // Width of the input value
-    parameter int M = 3; // Width of the output result (log2(256) = 8 -> 3 bits)
+    parameter int M = 3; // Width of the output result 
 
     always_ff @(posedge clk or posedge reset) begin
         if (reset) begin
