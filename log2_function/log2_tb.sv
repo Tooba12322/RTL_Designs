@@ -1,9 +1,9 @@
 module tb_log2;
-    parameter int N = 8; // Width of the input value
-    parameter int M = 3; // Width of the output result
+    parameter N = 8; // Width of the input value
+    parameter M = 3; // Width of the output result
 
     logic clk;
-    logic reset;
+    logic rst;
     logic [N-1:0] value;
     logic [M-1:0] result;
     logic valid;
@@ -11,7 +11,7 @@ module tb_log2;
     // Instantiate the log2 module
     log2 #(.N(N), .M(M)) uut (
         .clk(clk),
-        .reset(reset),
+        .rst(rst),
         .value(value),
         .result(result),
         .valid(valid)
@@ -25,10 +25,10 @@ module tb_log2;
 
     // Test stimulus
     initial begin
-        reset = 1;          // Assert reset
-        value = 0;         // Initial value
+        rst = '0;          // Assert reset
+        value = '0;         // Initial value
         #10;               // Wait for reset to propagate
-        reset = 0;         // Deassert reset
+        rst = '1;         // Deassert reset
 
         // Generate random test cases
         for (int i = 0; i < 10; i++) begin
@@ -37,9 +37,10 @@ module tb_log2;
             #10; // Wait for clock edge
             // Check the results
             if (valid) begin
-                $display("Log2 of %0d is %0d (valid)", value, result);
-            end else begin
-                $display("Log2 of %0d is undefined (invalid)", value);
+              $display("Log2 of %0d is %0d (valid)", value, result);
+            end 
+            else begin
+              $display("Log2 of %0d is %0d (invalid)", value, result);
             end
         end
 
@@ -47,3 +48,16 @@ module tb_log2;
         $finish;
     end
 endmodule
+
+
+// Output :
+Log2 of 146 is 7 (invalid)
+Log2 of 64 is 6 (valid)
+Log2 of 4 is 2 (valid)
+Log2 of 49 is 5 (invalid)
+Log2 of 134 is 7 (invalid)
+Log2 of 198 is 7 (invalid)
+Log2 of 50 is 5 (invalid)
+Log2 of 9 is 3 (invalid)
+Log2 of 128 is 7 (valid)
+Log2 of 134 is 7 (invalid)
