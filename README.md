@@ -30,6 +30,7 @@ Basic RTL implementations :
 28. 7-Seg to ASCII
 29. Interface Design
 30. UART Baud rate generator
+31. RISCV Reg_file 32x32, two read one write
 
 Moderately difficult RTLs :
 
@@ -92,7 +93,7 @@ Complex RTL Designs :
 20. CNN building modules
 
 
-many more to come....
+
 
 
 
