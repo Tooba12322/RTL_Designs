@@ -1,27 +1,7 @@
 
 // Description: 
-//  This module implements an AXI4 slave interface with four read-write (RW) 
- //   registers and four read-only (RO) registers. The RW registers are writable 
-//  via the AXI4 interface and accessible externally. The RO registers are 
-//   read-only from the AXI4 interface and their values are driven during reset.
+//  // Design and verify a AXI slave interface which utilises the memory interface.
 
- // Features:
- //  - AXI4 protocol compliance
- //   - Individual access to RW and RO registers
- //   - Address decoding for up to 8 registers
- 
-// Register Map:
-//   Address  | Register
- //   ---------|-----------------
- //   0x00     | RW Register 0
-//   0x04     | RW Register 1
-//   0x08     | RW Register 2
- //   0x0C     | RW Register 3
- //   0x10     | RO Register 0
- //   0x14     | RO Register 1
-//   0x18     | RO Register 2
-//   0x1C     | RO Register 3
- 
 
 module axi_s(
   input logic aclk,
@@ -45,8 +25,9 @@ module axi_s(
   input logic          rready
 );
 
-  logic nwr, req, start;
-  assign nwr = !hwrite;
+  logic nwr, req, start, 
+ logic [31:0] addr;
+ assign nwr = (!(wvalid && wready)) || (rvalid && rready);
   assign start = (htrans==2'd2 && !nwr) ? '1 : '0; 
   assign hresp = '1;
   always @(posedge aclk or negedge arst_n) begin
@@ -56,7 +37,7 @@ module axi_s(
   end 
   assign req_i = start || req;
   
-  MEM mem(.clk(clk),.rst(rst),.req_i(req_i),.req_rnw_i(nwr),.req_addr_i(haddr),
+  MEM mem(.clk(clk),.rst(rst),.req_i(req_i),.req_rnw_i(nwr),.req_addr_i(addr),
           .req_wdata_i(hwdata),.req_ready_o(hready),.req_rdata_o(hrdata)); 
 endmodule
 
