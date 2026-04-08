@@ -43,11 +43,19 @@ module axi_s(
   
   logic nwr, ready, req;
   logic [31:0]  addr;
-  assign nwr = (!(wvalid && wready)) || (rvalid && rready);
+  logic [31:0]  awaddr_nxt, awaddr_reg;
+  logic [31:0]  araddr_nxt, araddr_reg;
+  
   logic [31:0] wdata, rdata;
-
+  
+  assign nwr = (!(wvalid && wready)) || (rvalid && rready);
+  always_comb begin
+    addr = nwr ? araddr_reg : awaddr_reg;
+  end
+  
   MEM mem(.clk(aclk),.rst_n(arst_n),.req_rnw_i(nwr),.req_addr_i(addr),
           .req_wdata_i(wdata),.req_ready_o(ready),.req_rdata_o(rdata)); 
+
   
   always @(posedge aclk or negedge arst_n) begin
     if (!arst_n) awready <= '0;
@@ -80,25 +88,24 @@ module axi_s(
   
   always_comb begin
       nx_state    = pr_state; //default case values
-      psel_nxt    = psel;
-      penable_nxt = penable;
-      paddr_nxt   = paddr;
-      pwrite_nxt  = pwrite;
-      pwdata_nxt  = pwdata;
-          
+      awaddr_nxt  = awaddr_reg;
+      araddr_nxt  = araddr_reg;
+    
     case (pr_state) 
       IDLE : begin
-               if (awvalid && awready)  nx_state = WRITE;
-               else if (arvalid && arready)  nx_state = READ;
+             if (awvalid && awready)  begin
+                nx_state = WRITE;
+                awaddr_nxt = awaddr;
+             end
+             else if (arvalid && arready)  begin
+                nx_state = READ;
+                araddr_nxt = araddr;
              end
       
-      WRITE : begin //generating write transaction signals to be driven in next cycle when pready=1
-                psel_nxt    = '1;
-                pwrite_nxt  = '1;
-                pwdata_nxt  = 32'hDEAD_CAFE + pwdata;
+      WRITE : begin 
+                
                 nx_state    = ACCESS;
-                paddr_nxt   = (event_a_i) ? 32'h1000_1000 : (event_b_i) ? 32'h2000_2000 : 32'h3000_3000;
-                penable_nxt = (penable == 1 && pwdata_nxt!=pwdata && pready_i) ? '0 : '1; //penable to be low during setup phase only
+                
               end
              
       READ : begin // wdata latched by slave when pready=1, check for next event
