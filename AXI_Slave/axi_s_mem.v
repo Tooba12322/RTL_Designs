@@ -35,11 +35,26 @@ module axi_s(
   input logic          rready
 );
 
-  logic nwr;
+  logic nwr, ready;
   assign nwr = (!(wvalid && wready)) || (rvalid && rready);
+
+  always @(posedge aclk or negedge arst_n) begin
+    if (!arst_n) awready <= '0;
+    else if (awvalid) awready <= ready;
+  end
+
+  always @(posedge aclk or negedge arst_n) begin
+    if (!arst_n) awready <= '0;
+    else if (arvalid) arready <= ready;
+  end
+
+  always @(posedge aclk or negedge arst_n) begin
+    if (!arst_n) wready <= '0;
+    else if (wvalid) wready <= ready;
+  end
   
   MEM mem(.clk(aclk),.rst_n(arst_n),.req_i(req_i),.req_rnw_i(nwr),.req_addr_i(addr),
-          .req_wdata_i(hwdata),.req_ready_o(hready),.req_rdata_o(hrdata)); 
+          .req_wdata_i(hwdata),.req_ready_o(ready),.req_rdata_o(hrdata)); 
 endmodule
 
 // A memory interface
@@ -61,7 +76,7 @@ module MEM (
   logic [31:0] req_rdata; //flop to store data read
   
   always @(posedge clk or negedge rst_n) begin
-    if (!arst_n) cnt <= '0;
+    if (!rst_n) cnt <= '0;
     else cnt <= cnt + 4'd1;
   end   
   
@@ -70,12 +85,12 @@ module MEM (
   assign req_ready_o = ((cnt%2) && (cnt%3)) || (cnt[2]=='1); //logic to generate ready out
   
   always_ff @(posedge clk or negedge rst_n) begin
-    if (!arst_n) req_rdata <= '0;
+    if (!rst_n) req_rdata <= '0;
     else if (req_i && req_rnw_i && req_ready_o) req_rdata <=  mem[req_addr_i];//read
   end  
   
   always_ff @(posedge clk or negedge rst_n) begin
-    if (!arst_n) begin
+    if (!rst_n) begin
       for (int i=0;i<16;i++) mem[i] <= '0;
     end
     else if (req_i && !req_rnw_i && req_ready_o) begin
