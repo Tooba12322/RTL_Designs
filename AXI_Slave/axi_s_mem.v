@@ -14,7 +14,6 @@ module axi_s(
 
   //Write data channel
   input logic [31:0]   wdata,
-  input logic [3:0]    wstrb,
   input logic          wvalid,
   output logic         wready,
 
@@ -42,26 +41,30 @@ module axi_s(
     RESP = 2'b11} state;
     state pr_state,nx_state;
   
-  logic nwr, ready;
+  logic nwr, ready, req;
   logic [31:0]  addr;
   assign nwr = (!(wvalid && wready)) || (rvalid && rready);
+  logic [31:0] wdata, rdata;
 
-  MEM mem(.clk(aclk),.rst_n(arst_n),.req_i(req_i),.req_rnw_i(nwr),.req_addr_i(addr),
+  MEM mem(.clk(aclk),.rst_n(arst_n),.req_rnw_i(nwr),.req_addr_i(addr),
           .req_wdata_i(wdata),.req_ready_o(ready),.req_rdata_o(rdata)); 
   
   always @(posedge aclk or negedge arst_n) begin
     if (!arst_n) awready <= '0;
     else if (awvalid) awready <= ready;
+    else awready <= '0;
   end
 
   always @(posedge aclk or negedge arst_n) begin
-    if (!arst_n) awready <= '0;
+    if (!arst_n) arready <= '0;
     else if (arvalid) arready <= ready;
+    else arready <= '0;
   end
 
   always @(posedge aclk or negedge arst_n) begin
     if (!arst_n) wready <= '0;
     else if (wvalid) wready <= ready;
+    else wready <= '0;
   end
 
   always @(posedge clk or negedge rst) begin
@@ -128,8 +131,6 @@ endmodule
 module MEM (
   input  logic      clk,
   input  logic      rst_n,
-
-  input       logic       req_i,
   input       logic       req_rnw_i,    // 1 - read, 0 - write
   input       logic [3:0] req_addr_i,
   input       logic [31:0]req_wdata_i,
@@ -152,14 +153,14 @@ module MEM (
   
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) req_rdata <= '0;
-    else if (req_i && req_rnw_i && req_ready_o) req_rdata <=  mem[req_addr_i];//read
+    else if (req_rnw_i && req_ready_o) req_rdata <=  mem[req_addr_i];//read
   end  
   
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       for (int i=0;i<16;i++) mem[i] <= '0;
     end
-    else if (req_i && !req_rnw_i && req_ready_o) begin
+    else if (!req_rnw_i && req_ready_o) begin
       mem[req_addr_i] <= req_wdata_i;//write
     end
   end
