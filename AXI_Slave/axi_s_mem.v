@@ -35,6 +35,13 @@ module axi_s(
   input logic          rready
 );
 
+  //state enum  
+  typedef enum logic [1:0] {IDLE = 2'b00, 
+    WRITE = 2'b01,
+    READ = 2'b10,
+    RESP = 2'b11} state;
+    state pr_state,nx_state;
+  
   logic nwr, ready;
   assign nwr = (!(wvalid && wready)) || (rvalid && rready);
 
