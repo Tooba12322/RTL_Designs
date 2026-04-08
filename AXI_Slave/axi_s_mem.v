@@ -59,6 +59,70 @@ module axi_s(
     if (!arst_n) wready <= '0;
     else if (wvalid) wready <= ready;
   end
+
+  always @(posedge clk or negedge rst) begin
+    if (!rst) begin
+      psel     <= '0;
+      paddr    <= '0;
+      pwrite   <= '0;
+      pwdata   <= '0;
+      pr_state <= '0;
+    end
+    else if (pready_i) begin //pready dependent driven output
+      pr_state <= nx_state;
+      psel     <= psel_nxt;
+      paddr    <= paddr_nxt;
+      pwrite   <= pwrite_nxt;
+      pwdata   <= pwdata_nxt;
+    end
+  end
+  
+  always_comb begin
+      nx_state    = pr_state; //default case values
+      psel_nxt    = psel;
+      penable_nxt = penable;
+      paddr_nxt   = paddr;
+      pwrite_nxt  = pwrite;
+      pwdata_nxt  = pwdata;
+          
+    case (pr_state) 
+      IDLE : begin
+               if (event_a_i || event_b_i || event_c_i) begin
+                 nx_state = SETUP;
+               end  
+             end
+      
+      WRITE : begin //generating write transaction signals to be driven in next cycle when pready=1
+                psel_nxt    = '1;
+                pwrite_nxt  = '1;
+                pwdata_nxt  = 32'hDEAD_CAFE + pwdata;
+                nx_state    = ACCESS;
+                paddr_nxt   = (event_a_i) ? 32'h1000_1000 : (event_b_i) ? 32'h2000_2000 : 32'h3000_3000;
+                penable_nxt = (penable == 1 && pwdata_nxt!=pwdata && pready_i) ? '0 : '1; //penable to be low during setup phase only
+              end
+             
+      READ : begin // wdata latched by slave when pready=1, check for next event
+                 penable_nxt = '1;
+                 if (pready_i) begin
+                   if (event_a_i || event_b_i || event_c_i) nx_state = SETUP; 
+                   else begin
+                     nx_state = IDLE;
+                     psel_nxt    ='0;
+                   end
+                 end
+               end
+      RESP : begin // wdata latched by slave when pready=1, check for next event
+                 penable_nxt = '1;
+                 if (pready_i) begin
+                   if (event_a_i || event_b_i || event_c_i) nx_state = SETUP; 
+                   else begin
+                     nx_state = IDLE;
+                     psel_nxt    ='0;
+                   end
+                 end
+               end
+      endcase
+  end
   
   MEM mem(.clk(aclk),.rst_n(arst_n),.req_i(req_i),.req_rnw_i(nwr),.req_addr_i(addr),
           .req_wdata_i(hwdata),.req_ready_o(ready),.req_rdata_o(hrdata)); 
