@@ -43,8 +43,12 @@ module axi_s(
     state pr_state,nx_state;
   
   logic nwr, ready;
+  logic [31:0]  addr;
   assign nwr = (!(wvalid && wready)) || (rvalid && rready);
 
+  MEM mem(.clk(aclk),.rst_n(arst_n),.req_i(req_i),.req_rnw_i(nwr),.req_addr_i(addr),
+          .req_wdata_i(wdata),.req_ready_o(ready),.req_rdata_o(rdata)); 
+  
   always @(posedge aclk or negedge arst_n) begin
     if (!arst_n) awready <= '0;
     else if (awvalid) awready <= ready;
@@ -62,18 +66,12 @@ module axi_s(
 
   always @(posedge clk or negedge rst) begin
     if (!rst) begin
-      psel     <= '0;
-      paddr    <= '0;
-      pwrite   <= '0;
-      pwdata   <= '0;
+
       pr_state <= '0;
     end
     else if (pready_i) begin //pready dependent driven output
       pr_state <= nx_state;
-      psel     <= psel_nxt;
-      paddr    <= paddr_nxt;
-      pwrite   <= pwrite_nxt;
-      pwdata   <= pwdata_nxt;
+      
     end
   end
   
@@ -87,9 +85,8 @@ module axi_s(
           
     case (pr_state) 
       IDLE : begin
-               if (event_a_i || event_b_i || event_c_i) begin
-                 nx_state = SETUP;
-               end  
+               if (awvalid && awready)  nx_state = WRITE;
+               else if (arvalid && arready)  nx_state = READ;
              end
       
       WRITE : begin //generating write transaction signals to be driven in next cycle when pready=1
@@ -123,9 +120,7 @@ module axi_s(
                end
       endcase
   end
-  
-  MEM mem(.clk(aclk),.rst_n(arst_n),.req_i(req_i),.req_rnw_i(nwr),.req_addr_i(addr),
-          .req_wdata_i(hwdata),.req_ready_o(ready),.req_rdata_o(hrdata)); 
+
 endmodule
 
 // A memory interface
