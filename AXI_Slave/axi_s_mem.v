@@ -25,19 +25,10 @@ module axi_s(
   input logic          rready
 );
 
-  logic nwr, req, start, 
- logic [31:0] addr;
- assign nwr = (!(wvalid && wready)) || (rvalid && rready);
-  assign start = (htrans==2'd2 && !nwr) ? '1 : '0; 
-  assign hresp = '1;
-  always @(posedge aclk or negedge arst_n) begin
-    if (!arst_n) req <= '0;
-    else if (htrans==2'd2 || htrans==2'd3) req <= '1;
-    else req <= '0;
-  end 
-  assign req_i = start || req;
+  logic nwr;
+  assign nwr = (!(wvalid && wready)) || (rvalid && rready);
   
-  MEM mem(.clk(clk),.rst(rst),.req_i(req_i),.req_rnw_i(nwr),.req_addr_i(addr),
+  MEM mem(.clk(aclk),.rst_n(arst_n),.req_i(req_i),.req_rnw_i(nwr),.req_addr_i(addr),
           .req_wdata_i(hwdata),.req_ready_o(hready),.req_rdata_o(hrdata)); 
 endmodule
 
