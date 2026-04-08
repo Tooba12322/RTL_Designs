@@ -6,19 +6,29 @@
 module axi_s(
   input logic aclk,
   input logic arst_n,
+
+  //Write addr channel
   input logic [31:0]   awaddr,
   input logic          awvalid,
   output logic         awready,
+
+  //Write data channel
   input logic [31:0]   wdata,
   input logic [3:0]    wstrb,
   input logic          wvalid,
   output logic         wready,
+
+  //Write response channel
   output logic [1:0]   bresp,
   output logic         bvalid,
   input logic          bready,
+
+  //Read addr channel
   input logic [31:0]   araddr,
   input logic          arvalid,
   output logic         arready,
+
+  //Read data channel
   output logic [31:0]  rdata,
   output logic [1:0]   rresp,
   output logic         rvalid,
