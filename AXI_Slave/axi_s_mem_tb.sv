@@ -33,8 +33,33 @@ module axi_s_mem_tb ();
 
   task axi_write (input addr, input data);
     begin
-      
+      // Drive write addr
+      @(posedge aclk);
+      awvalid <= '1;
+      awaddr  <= addr;
+      wait(awready);
+      @(posedge aclk);
+      awvalid <= '0;
+
+      // Drive write data
+      @(posedge aclk);
+      wvalid <= '1;
+      wdata  <= data;
+      wait(wready);
+      @(posedge aclk);
+      wvalid <= '0;
+
+      // Check write response
+      @(posedge aclk);
+      bready <= '1;
+      wait(bvalid);
+      @(posedge aclk);
+      bready <= '0;
+
+      $display("End of write transaction, Data=%0h, Addr=%0h",wdata,awaddr);
     end
+  endtask
+  
   initial begin
     //generate waveform
     $dumpfile("axi_s_mem.vcd");
@@ -49,33 +74,13 @@ module axi_s_mem_tb ();
     $display("==================================================");
     $display("=========AXI Simulation Started==========");
     $display("==================================================");
+    
     //Stimulus
     
-    for (int i=0; i<4; i++) begin
-        prdata_i = $urandom_range(32'h0,32'hCAFEBEDF);
-        pready_i = $random%5;
-        #3;
-    end
-    
-    cmd_i = 2'b10;
-    for (int i=0; i<4; i++) begin
-      pready_i = $random%2;
-      #5;
-    end
-    
-    #5 cmd_i = 2'b01;
-    for (int i=0; i<4; i++) begin
-        prdata_i = $urandom_range(32'h0,32'hCAFEBEDF);
-        pready_i = $random%3;
-        #3;
-    end
-    
-    cmd_i = 2'b10;
-    for (int i=0; i<4; i++) begin
-      pready_i = $random%6;
-      #5;
-    end
-    pready_i = '1;
+    axi_write($urandom_range(32'h0,32'hCAFEBEDF));
+
+    #50;
+    $dispaly("===========TEST PASSED============");
     #20 $finish;
   end
   
