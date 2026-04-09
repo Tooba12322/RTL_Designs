@@ -40,32 +40,32 @@ module axi_s(
     READ = 2'b10,
     RESP = 2'b11} state;
     state pr_state,nx_state;
-  
-  logic rd_nwr, ready, req;
+
+  // Internal signals
+  logic rd_nwr, ready;
   logic [31:0]  addr;
   logic [31:0]  awaddr_nxt, awaddr_reg;
   logic [31:0]  araddr_nxt, araddr_reg;
-  
   logic [31:0] wData, rData;
-  
+
+  // Drive addr to mem depending on read or write transaction
   always_comb begin
     addr = rd_nwr ? araddr_reg : awaddr_reg;
   end
-  
+
+  //Memory instantiaton
   MEM mem(.clk(aclk),.rst_n(arst_n),.req_rnw_i(rd_nwr),.req_addr_i(addr),
           .req_wdata_i(wData),.req_ready_o(ready),.req_rdata_o(rData)); 
 
-  always @(posedge clk or negedge rst) begin
-    if (!rst) begin
-      pr_state <= '0;
-    end
-    else begin 
-      pr_state <= nx_state;
-    end
+  //State register
+  always_ff @(posedge aclk or negedge arst_n) begin
+    if (!arst_n) pr_state <= '0;
+    else pr_state         <= nx_state;
   end
-  
+
+  //State machine
   always_comb begin
-      nx_state    = pr_state; //default case values
+      nx_state    = pr_state; //default values
       awaddr_nxt  = awaddr_reg;
       araddr_nxt  = araddr_reg;
       awready     = '0;
@@ -75,40 +75,44 @@ module axi_s(
       rd_nwr      = '0;
       bvalid      = '0;
       bresp       = '0;
+      rvalid      = '0;
+      rdata       = '0;
+      rresp       = '0;
     
     case (pr_state) 
       IDLE : begin
+        // Drive ready depending on valid
              if (awvalid) awready = ready;
              else if (arvalid) arready = ready;
+
+        // Check for read or write and latch addr
              if (awvalid && awready)  begin
                 nx_state = WRITE;
                 awaddr_nxt = awaddr;
              end
              else if (arvalid && arready)  begin
+                rd_nwr = '1;
                 nx_state = READ;
                 araddr_nxt = araddr;
              end
       
-      WRITE : begin 
+      WRITE : begin //Drive write data to mem
                 wready = ready;
-                rd_nwr = '0;
                 if (wvalid && wready)  begin
+                  rd_nwr = '0;
                   wData       = wdata;
                   nx_state    = RESP;
                 end
               end
              
-      READ : begin 
-                  rd_nwr = '1;
-                 if (pready_i) begin
-                   if (event_a_i || event_b_i || event_c_i) nx_state = SETUP; 
-                   else begin
-                     nx_state = IDLE;
-                     psel_nxt    ='0;
-                   end
-                 end
+      READ : begin // read valid data from mem
+                rvalid = '1;
+                rdata  = rData;
+                rresp  = '0;
+                if (rvalid && rready)   nx_state = IDLE;
                end
-      RESP : begin 
+        
+        RESP : begin //Send write response OKAY
                 bvalid   = '1;
                 bresp    = '0;
                 if (bvalid && bready) nx_state = IDLE;
@@ -134,14 +138,15 @@ module MEM (
   logic [3:0] cnt; // cnt to generate random ready out
   logic [31:0] req_rdata; //flop to store data read
   
-  always @(posedge clk or negedge rst_n) begin
+  always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) cnt <= '0;
     else cnt <= cnt + 4'd1;
   end   
   
-  assign req_rdata_o = req_rdata; //Drive rdata when ready ,req and rnw are high
-  
-  assign req_ready_o = ((cnt%2) && (cnt%3)) || (cnt[2]=='1); //logic to generate ready out
+  always_comb begin
+    req_rdata_o = req_rdata; //Drive rdata when ready ,req and rnw are high
+    req_ready_o = ((cnt%2) && (cnt%3)) || (cnt[2]=='1); //logic to generate ready out
+  end
   
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) req_rdata <= '0;
