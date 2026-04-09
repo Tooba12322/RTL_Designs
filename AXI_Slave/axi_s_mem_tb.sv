@@ -77,10 +77,10 @@ module axi_s_mem_tb ();
     
     //Stimulus
     
-    axi_write($urandom_range(32'h0,32'hCAFEBEDF));
+    axi_write($urandom_range(32'h0,32'hCAFEBEDF), $urandom_range(32'h0,32'h0000000F));
 
     #50;
-    $dispaly("===========TEST PASSED============");
+    $display("===========TEST PASSED============");
     #20 $finish;
   end
   
