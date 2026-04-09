@@ -41,48 +41,26 @@ module axi_s(
     RESP = 2'b11} state;
     state pr_state,nx_state;
   
-  logic nwr, ready, req;
+  logic rd_nwr, ready, req;
   logic [31:0]  addr;
   logic [31:0]  awaddr_nxt, awaddr_reg;
   logic [31:0]  araddr_nxt, araddr_reg;
   
-  logic [31:0] wdata, rdata;
+  logic [31:0] wData, rData;
   
-  assign nwr = (!(wvalid && wready)) || (rvalid && rready);
   always_comb begin
-    addr = nwr ? araddr_reg : awaddr_reg;
+    addr = rd_nwr ? araddr_reg : awaddr_reg;
   end
   
-  MEM mem(.clk(aclk),.rst_n(arst_n),.req_rnw_i(nwr),.req_addr_i(addr),
-          .req_wdata_i(wdata),.req_ready_o(ready),.req_rdata_o(rdata)); 
-
-  
-  always @(posedge aclk or negedge arst_n) begin
-    if (!arst_n) awready <= '0;
-    else if (awvalid) awready <= ready;
-    else awready <= '0;
-  end
-
-  always @(posedge aclk or negedge arst_n) begin
-    if (!arst_n) arready <= '0;
-    else if (arvalid) arready <= ready;
-    else arready <= '0;
-  end
-
-  always @(posedge aclk or negedge arst_n) begin
-    if (!arst_n) wready <= '0;
-    else if (wvalid) wready <= ready;
-    else wready <= '0;
-  end
+  MEM mem(.clk(aclk),.rst_n(arst_n),.req_rnw_i(rd_nwr),.req_addr_i(addr),
+          .req_wdata_i(wData),.req_ready_o(ready),.req_rdata_o(rData)); 
 
   always @(posedge clk or negedge rst) begin
     if (!rst) begin
-
       pr_state <= '0;
     end
-    else if (pready_i) begin //pready dependent driven output
+    else begin 
       pr_state <= nx_state;
-      
     end
   end
   
@@ -90,9 +68,18 @@ module axi_s(
       nx_state    = pr_state; //default case values
       awaddr_nxt  = awaddr_reg;
       araddr_nxt  = araddr_reg;
+      awready     = '0;
+      arready     = '0;
+      wready      = '0;
+      wData       = '0;
+      rd_nwr      = '0;
+      bvalid      = '0;
+      bresp       = '0;
     
     case (pr_state) 
       IDLE : begin
+             if (awvalid) awready = ready;
+             else if (arvalid) arready = ready;
              if (awvalid && awready)  begin
                 nx_state = WRITE;
                 awaddr_nxt = awaddr;
@@ -103,13 +90,16 @@ module axi_s(
              end
       
       WRITE : begin 
-                
-                nx_state    = ACCESS;
-                
+                wready = ready;
+                rd_nwr = '0;
+                if (wvalid && wready)  begin
+                  wData       = wdata;
+                  nx_state    = RESP;
+                end
               end
              
-      READ : begin // wdata latched by slave when pready=1, check for next event
-                 penable_nxt = '1;
+      READ : begin 
+                  rd_nwr = '1;
                  if (pready_i) begin
                    if (event_a_i || event_b_i || event_c_i) nx_state = SETUP; 
                    else begin
@@ -118,16 +108,11 @@ module axi_s(
                    end
                  end
                end
-      RESP : begin // wdata latched by slave when pready=1, check for next event
-                 penable_nxt = '1;
-                 if (pready_i) begin
-                   if (event_a_i || event_b_i || event_c_i) nx_state = SETUP; 
-                   else begin
-                     nx_state = IDLE;
-                     psel_nxt    ='0;
-                   end
-                 end
-               end
+      RESP : begin 
+                bvalid   = '1;
+                bresp    = '0;
+                if (bvalid && bready) nx_state = IDLE;
+             end
       endcase
   end
 
