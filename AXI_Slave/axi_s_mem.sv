@@ -95,6 +95,7 @@ module axi_s(
                 nx_state = READ;
                 araddr_nxt = araddr;
              end
+          end 
       
       WRITE : begin //Drive write data to mem
                 wready = ready;
@@ -128,7 +129,7 @@ module MEM (
   input  logic      clk,
   input  logic      rst_n,
   input       logic       req_rnw_i,    // 1 - read, 0 - write
-  input       logic [3:0] req_addr_i,
+  input       logic [31:0] req_addr_i,
   input       logic [31:0]req_wdata_i,
   output      logic       req_ready_o,
   output      logic [31:0]req_rdata_o
