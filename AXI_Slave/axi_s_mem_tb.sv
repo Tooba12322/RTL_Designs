@@ -27,9 +27,14 @@ module axi_s_mem_tb ();
   logic [1:0]   rresp;
   logic         rvalid;
   logic          rready;
-
   axi_s_mem DUT(.*);
-  
+
+  logic [31:0]  addr, data;
+
+  task axi_write (input addr, input data);
+    begin
+      
+    end
   initial begin
     //generate waveform
     $dumpfile("axi_s_mem.vcd");
@@ -40,7 +45,10 @@ module axi_s_mem_tb ();
     arst_n = '0;
      
     #9 arst_n = '1;
-    
+
+    $display("==================================================");
+    $display("=========AXI Simulation Started==========");
+    $display("==================================================");
     //Stimulus
     
     for (int i=0; i<4; i++) begin
