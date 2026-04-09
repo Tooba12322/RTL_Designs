@@ -3,10 +3,31 @@
 module axi_s_mem_tb ();
   
   logic        aclk,  arst_n;
+  logic [31:0]   awaddr;
+  logic          awvalid;
+  logic         awready;
 
+  //Write data channel
+  logic [31:0]   wdata;
+  logic          wvalid;
+  logic         wready;
 
-  logic[31:0]  prdata_i;
-  
+  //Write response channel
+  logic [1:0]   bresp;
+  logic         bvalid;
+  logic          bready;
+
+  //Read addr channel
+  logic [31:0]   araddr;
+  logic          arvalid;
+  logic         arready;
+
+  //Read data channel
+  logic [31:0]  rdata;
+  logic [1:0]   rresp;
+  logic         rvalid;
+  logic          rready;
+
   axi_s_mem DUT(.*);
   
   initial begin
@@ -17,12 +38,11 @@ module axi_s_mem_tb ();
     //Initialization
     aclk = '0;
     arst_n = '0;
-    pready_i = '1;
-    cmd_i = '0;
      
     #9 arst_n = '1;
+    
     //Stimulus
-    #5 cmd_i = 2'b01;
+    
     for (int i=0; i<4; i++) begin
         prdata_i = $urandom_range(32'h0,32'hCAFEBEDF);
         pready_i = $random%5;
