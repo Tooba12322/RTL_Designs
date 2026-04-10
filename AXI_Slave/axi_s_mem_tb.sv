@@ -1,9 +1,10 @@
+
 // Waveform : 
 
 module axi_s_mem_tb ();
   
   logic        aclk,  arst_n;
-  logic [31:0]   awaddr;
+  logic [7:0]   awaddr;
   logic          awvalid;
   logic         awready;
 
@@ -18,7 +19,7 @@ module axi_s_mem_tb ();
   logic          bready;
 
   //Read addr channel
-  logic [31:0]   araddr;
+  logic [7:0]   araddr;
   logic          arvalid;
   logic         arready;
 
@@ -27,11 +28,14 @@ module axi_s_mem_tb ();
   logic [1:0]   rresp;
   logic         rvalid;
   logic          rready;
+  
   axi_s_mem DUT(.*);
 
-  logic [31:0]  addr, data;
+  logic [31:0]  data;
 
-  task axi_write (input addr, input data);
+  logic [7:0] addr;
+  
+  task axi_write (input [7:0] addr, input [31:0] data);
     begin
       // Drive write addr
       @(posedge aclk);
@@ -56,7 +60,6 @@ module axi_s_mem_tb ();
       @(posedge aclk);
       bready <= '0;
 
-      $display("End of write transaction, Data=%0h, Addr=%0h",wdata,awaddr);
     end
   endtask
   
@@ -64,6 +67,7 @@ module axi_s_mem_tb ();
     //generate waveform
     $dumpfile("axi_s_mem.vcd");
     $dumpvars(0,axi_s_mem_tb);
+    $monitor("End of write transaction, Data=%h, Addr=%h",DUT.mem.mem[15],awaddr);
 
     //Initialization
     aclk = '0;
@@ -77,11 +81,10 @@ module axi_s_mem_tb ();
     
     //Stimulus
     
-    axi_write($urandom_range(32'h0,32'hCAFEBEDF), $urandom_range(32'h0,32'h0000000F));
+    axi_write(8'h0F, $urandom_range(32'h0A0E0E00,32'hCAFEBEDF));
 
-    #50;
     $display("===========TEST PASSED============");
-    #20 $finish;
+    #80 $finish;
   end
   
    //Clk Generation 
