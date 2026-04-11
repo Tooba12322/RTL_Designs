@@ -1,3 +1,4 @@
+
 // Description: 
 // Design and verify a AXI slave interface which utilises the memory interface.
 
@@ -44,12 +45,11 @@ module axi_s_mem(
   logic rd_nwr, ready, req;
   logic [7:0]  addr;
   logic [7:0]  awaddr_nxt, awaddr_reg;
-  logic [7:0]  araddr_nxt, araddr_reg;
   logic [31:0] wData, rData;
 
   // Drive addr to mem depending on read or write transaction
   always_comb begin
-    addr = rd_nwr ? araddr_reg : awaddr_reg;
+    addr = rd_nwr ? araddr : awaddr_reg;
   end
 
   //Memory instantiaton
@@ -61,12 +61,10 @@ module axi_s_mem(
     if (!arst_n) begin
       pr_state <= '0;
       awaddr_reg <= '0;
-      araddr_reg <= '0;
     end
     else begin
       pr_state         <= nx_state;
       awaddr_reg <= awaddr_nxt;
-      araddr_reg <= araddr_nxt;
     end
   end
 
@@ -74,7 +72,6 @@ module axi_s_mem(
   always_comb begin
       nx_state    = pr_state; //default values
       awaddr_nxt  = awaddr_reg;
-      araddr_nxt  = araddr_reg;
       awready     = '0;
       arready     = '0;
       wready      = '0;
@@ -83,7 +80,7 @@ module axi_s_mem(
       bvalid      = '0;
       bresp       = '0;
       rvalid      = '0;
-      rdata       = '0;
+      rdata       = rData;
       rresp       = '0;
       req         = '0;
     
@@ -100,8 +97,8 @@ module axi_s_mem(
              end
              else if (arvalid && arready)  begin
                 rd_nwr = '1;
-                nx_state = READ;
-                araddr_nxt = araddr;
+                req    = '1;
+                nx_state = READ; 
              end
           end 
       
@@ -119,8 +116,8 @@ module axi_s_mem(
                 rvalid = '1;
                 rdata  = rData;
                 rresp  = '0;
-                if (rvalid && rready)   nx_state = IDLE;
-               end
+                if (rvalid && rready) nx_state = IDLE;
+             end
         
         RESP : begin //Send write response OKAY
                 bvalid   = '1;
