@@ -45,7 +45,8 @@ Basic RTL implementations :
 42. Crossbar switch
 43. Packet counter
 44. AXI stream lite interface
-45. AXI lite interface
+45. AXI4 lite master interface
+46. GPIO controller
 
 Moderately difficult RTLs :
 
