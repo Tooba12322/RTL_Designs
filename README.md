@@ -31,6 +31,21 @@ Basic RTL implementations :
 29. Interface Design
 30. UART Baud rate generator
 31. RISCV Reg_file 32x32, two read one write
+    
+32. Binary to BCD converter
+33. 3-8 Decoder
+34. 8-3 Encoder
+35. Parity checker/genertor
+36. Frequency divider
+37. Digital lock
+38. 2-read/1-write reg file
+39. Memory with byte enable
+40. Rd/Wr first RAM
+41. Skid buffer
+42. Crossbar switch
+43. Packet counter
+44. AXI stream lite interface
+45. AXI lite interface
 
 Moderately difficult RTLs :
 
